@@ -59,9 +59,11 @@ function loginUser(dispatch, login, password, history, setIsLoading, setError) {
   setError(false);
   setIsLoading(true);
 
+  const ledgerId = "myLedgerId";
+
   if (!!login) {
     const applicationId = uuidv4();
-    const payload = { ledgerId: "FDB", applicationId, party: login };
+    const payload = { ledgerId, applicationId, party: login };
     const token = jwt.sign(payload, "secret");
     localStorage.setItem("daml.token", token);
     dispatch({ type: "LOGIN_SUCCESS", token, user: login });
