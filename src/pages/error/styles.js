@@ -8,7 +8,7 @@ export default makeStyles(theme => ({
     flexDirection: "column",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: theme.palette.primary.main,
+    // backgroundColor: theme.palette.primary.main,
     position: "absolute",
     top: 0,
     left: 0,
@@ -23,7 +23,7 @@ export default makeStyles(theme => ({
   },
   logotypeText: {
     fontWeight: 500,
-    color: "white",
+    color: theme.palette.primary.main,
     marginLeft: theme.spacing(2),
   },
   logotypeIcon: {
@@ -51,7 +51,7 @@ export default makeStyles(theme => ({
   },
   safetyText: {
     fontWeight: 300,
-    color: theme.palette.text.hint,
+    color: theme.palette.text,
   },
   backButton: {
     boxShadow: theme.customShadows.widget,

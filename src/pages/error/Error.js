@@ -7,7 +7,7 @@ import classnames from "classnames";
 import useStyles from "./styles";
 
 // logo
-import logo from "./logo.svg";
+import logo from "../login/logo.svg";
 
 export default function Error() {
   var classes = useStyles();
@@ -17,7 +17,7 @@ export default function Error() {
       <div className={classes.logotype}>
         <img className={classes.logotypeIcon} src={logo} alt="logo" />
         <Typography variant="h3" color="white" className={classes.logotypeText}>
-          Material Admin
+          App Template
         </Typography>
       </div>
       <Paper classes={{ root: classes.paperRoot }}>
