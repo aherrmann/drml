@@ -34,6 +34,23 @@ template Publisher
     key publisher : Party
     maintainer key
 
+    choice OfferBookVolume : ContractId (Proposal BookVolumeLicense)
+      with
+        volumeLicense : BookVolumeLicense
+        price : Int
+      controller publisher
+      do
+        _bookDeal <- fetchByKey @BookDeal
+          ( volumeLicense.book.author
+          , volumeLicense.publisher
+          , volumeLicense.book.isbn
+          )
+        create Proposal
+          with
+            proposer = volumeLicense.publisher
+            receiver = volumeLicense.reseller
+            proposal = volumeLicense
+
 template Reseller
   with
     reseller : Party
@@ -43,13 +60,22 @@ template Reseller
     key reseller : Party
     maintainer key
 
-template Book
+type ISBN = Text
+
+data Book = Book
   with
+    isbn : ISBN
     content : Text
     title : Text
     author : Party
+  deriving (Eq, Show)
+
+template BookLicense
+  with
+    publisher: Party
+    book: Book
   where
-    signatory author
+    signatory publisher
 
 template Template t => Proposal t
   with
@@ -75,35 +101,79 @@ template BookDeal
     author : Party
     publisher : Party
     royalties : Decimal
-    book : ContractId Book
+    book : Book
   where
     signatory author, publisher
+    key (author, publisher, book.isbn) : (Party, Party, ISBN)
+    maintainer key._1, key._2
 
 template instance BookDealProposal = Proposal BookDeal
+
+template BookVolumeLicense
+  with
+    publisher : Party
+    reseller : Party
+    volume : Int
+    book : Book
+  where
+    signatory publisher, reseller
+    ensure volume > 0
+
+    choice CreateLicense: (Optional (ContractId BookVolumeLicense), ContractId BookLicense)
+      controller reseller
+      do
+        volumeLicense <-
+          if (volume == 1) then
+            return None
+          else
+            fmap Some $ create this
+              with
+                volume = volume - 1
+        bookLicense <- create BookLicense
+          with
+            publisher = publisher
+            book = book
+        return (volumeLicense, bookLicense)
+
+template instance BookVolumeLicenseProposal = Proposal BookVolumeLicense
 
 testBookDeal = scenario
   do
     author <- getParty "BestAuthor"
-    authorId <- author `submit` create Author { author = author }
+    authorId <- author `submit` create Author with ..
     publisher <- getParty "BestPublisher"
-    publisherId <- publisher `submit` create Publisher { publisher = publisher }
-    book <- author `submit` create Book
-      with
-        author = author
-        title = "The best book"
-        content = "This is the best book"
+    publisherId <- publisher `submit` create Publisher with ..
+    reseller <- getParty "BestReseller"
+    resellerId <- reseller `submit` create Reseller with ..
+    let book = Book
+          with
+            author = author
+            title = "The best book"
+            content = "This is the best book"
+            isbn = "b3st-isbn"
     let bookDeal = BookDeal
           with
             author = author
             publisher = publisher
             book = book
             royalties = 0.10
-    proposal <- author `submit` create Proposal
+    bookDealProposalId <- author `submit` create Proposal
       with
         proposer = author
         receiver = publisher
         proposal = bookDeal
-    publisher `submit` exercise proposal Accept
+    bookDealId <- publisher `submit` exercise bookDealProposalId Accept 
+    bookDeal <- publisher `submit` fetch bookDealId
+    let bookVolumeLicense = BookVolumeLicense
+          with
+            volume = 100
+            book = bookDeal.book
+            ..
+    bookVolumeProposal <- publisher `submit` exercise publisherId OfferBookVolume
+      with
+        price = 1000
+        volumeLicense = bookVolumeLicense
+    reseller `submit` exercise bookVolumeProposal Accept
     return ()
 
 type AssetId = ContractId Asset
