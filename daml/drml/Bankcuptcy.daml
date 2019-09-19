@@ -1,0 +1,27 @@
+-- Copyright (c) 2019 The DAML Authors. All rights reserved.
+-- SPDX-License-Identifier: Apache-2.0
+
+daml 1.2
+module Bankruptcy where
+import Book
+
+template Bankrupt
+  with
+    reseller : Party
+    newReseller : Party
+  where
+    signatory reseller
+    observer newReseller
+
+    nonconsuming choice TakeOverVolumeLicense: ContractId BookVolumeLicense
+      with 
+        bookVolumeLicense : ContractId BookVolumeLicense
+      controller newReseller
+      do
+        exercise bookVolumeLicense TransferBookVolumeLicense with newReseller = newReseller
+
+bankrupt = scenario do
+  testBookDeal
+  p <- getParty "party"
+  pure ()
+    -- TODO: to be continued

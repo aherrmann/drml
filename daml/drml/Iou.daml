@@ -11,6 +11,7 @@ template Iou
   where
     signatory issuer
     observer owner
+    ensure amount.value > 0.0
 
     choice Transfer : ContractId Iou
       with newOwner : Party
@@ -22,7 +23,6 @@ template Iou
         newAmount: Decimal
       controller owner
       do
-        assert (0.0 < newAmount && newAmount < amount.value)
         a <- create this with
           amount = Amount newAmount amount.currency
         b <- create this with
