@@ -59,7 +59,7 @@ function loginUser(dispatch, login, password, history, setIsLoading, setError) {
   setError(false);
   setIsLoading(true);
 
-  const ledgerId = "myLedgerId";
+  const ledgerId = "DRML";
 
   if (!!login) {
     const applicationId = uuidv4();

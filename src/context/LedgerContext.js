@@ -68,9 +68,8 @@ export async function sendCommand(dispatch, token, commandType, command, setIsSe
     try {
       const headers = { "Content-Type": "application/json", "Authorization": "Bearer " + token };
       const options = { method: "POST", headers, body: JSON.stringify(command) };
-      console.log(options);
-      const response = await fetch("/command/" + commandType, options);
-      await response.json();
+      console.log(command);
+      await fetch("/command/" + commandType, options);
       dispatch({ type: "COMMAND_SENT" });
       setIsSending(false);
     }

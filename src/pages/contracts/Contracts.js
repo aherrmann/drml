@@ -20,7 +20,7 @@ export default function Contracts() {
     const argument = { arg1: "", arg2: 0, arg3: { arg3a: "", arg3b: "" }};
     const meta = { ledgerEffectiveTime: 0 }; // Required if sandbox runs with static time
     const command = { templateId, contractId, choice, argument, meta };
-    await sendCommand(dispatch, user.token, "exercise", command, () => console.log("Command is sending"), () => console.log("Error occurred"));
+    await sendCommand(dispatch, user.token, "exercise", command, e => { if (e) console.log("setIsSending: " + e) }, e => { if (e) console.log("setError:" + e) });
   }
   
   return (
@@ -40,10 +40,10 @@ export default function Contracts() {
           <TableBody>
             {ledger.contracts.map((c, i) => (
               <TableRow key={i} className={classes.tableRow}>
-                <TableCell className={[classes.tableCell, classes.cell1]}>{c.templateId.moduleName}</TableCell>
-                <TableCell className={[classes.tableCell, classes.cell1]}>{c.templateId.entityName}</TableCell>
-                <TableCell className={[classes.tableCell, classes.cell2]}>{c.contractId}</TableCell>
-                <TableCell className={[classes.tableCell, classes.cell3]}>
+                <TableCell className={classes.tableCell}>{c.templateId.moduleName}</TableCell>
+                <TableCell className={classes.tableCell}>{c.templateId.entityName}</TableCell>
+                <TableCell className={classes.tableCell}>{c.contractId}</TableCell>
+                <TableCell className={classes.tableCell}>
                   <ReactJson src={c.argument} name={false} collapsed={true} enableClipboard={false}/>
                 </TableCell>
               </TableRow>

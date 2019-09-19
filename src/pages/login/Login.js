@@ -14,14 +14,14 @@ function Login(props) {
   // local
   var [isLoading, setIsLoading] = useState(false);
   var [error, setError] = useState(null);
-  var [loginValue, setLoginValue] = useState("");
+  var [loginValue, setLoginValue] = useState("BestAuthor");
   var [passwordValue, setPasswordValue] = useState("");
 
   return (
     <Grid container className={classes.container}>
       <div className={classes.logotypeContainer}>
         <img src={logo} alt="logo" className={classes.logotypeImage} />
-        <Typography className={classes.logotypeText}>App Template</Typography>
+        <Typography className={classes.logotypeText}>DRML</Typography>
       </div>
       <div className={classes.formContainer}>
         <div className={classes.form}>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Drawer, IconButton, List } from "@material-ui/core";
-import { LooksOne, LooksTwo, Looks3, BorderAll, ArrowBack } from "@material-ui/icons";
+import { ArrowBack } from "@material-ui/icons";
 import { useTheme } from "@material-ui/styles";
 import { withRouter } from "react-router-dom";
 import classNames from "classnames";
@@ -8,13 +8,13 @@ import useStyles from "./styles";
 import SidebarLink from "./components/SidebarLink/SidebarLink";
 import { useLayoutState, useLayoutDispatch, toggleSidebar } from "../../context/LayoutContext";
 
-function Sidebar({ location }) {
-  var classes = useStyles();
-  var theme = useTheme();
+function Sidebar({ structure, location }) {
+  const classes = useStyles();
+  const theme = useTheme();
 
   // global
-  var { isSidebarOpened } = useLayoutState();
-  var layoutDispatch = useLayoutDispatch();
+  const { isSidebarOpened } = useLayoutState();
+  const layoutDispatch = useLayoutDispatch();
 
   // local
   var [isPermanent, setPermanent] = useState(true);
@@ -53,38 +53,13 @@ function Sidebar({ location }) {
         </IconButton>
       </div>
       <List className={classes.sidebarList}>
-        <SidebarLink
-          key="contracts"
-          label="Contracts"
-          path="/app/contracts"
-          icon={(<BorderAll />)}
-          location={location}
-          isSidebarOpened={isSidebarOpened}
-        />
-        <SidebarLink
-          key="tab1"
-          label="Tab One"
-          path="/app/tab1"
-          icon={(<LooksOne />)}
-          location={location}
-          isSidebarOpened={isSidebarOpened}
-        />
-        <SidebarLink
-          key="tab2"
-          label="Tab Two"
-          path="/app/tab2"
-          icon={(<LooksTwo />)}
-          location={location}
-          isSidebarOpened={isSidebarOpened}
-        />
-        <SidebarLink
-          key="tab3"
-          label="Tab Three"
-          path="/app/tab3"
-          icon={(<Looks3 />)}
-          location={location}
-          isSidebarOpened={isSidebarOpened}
-        />
+        { structure.filter(s => !s.hideInSidebar).map(s => (
+          <SidebarLink
+            { ...s }
+            location={location}
+            isSidebarOpened={isSidebarOpened}
+          />
+        ))}
       </List>
     </Drawer>
   );

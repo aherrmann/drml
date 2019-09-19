@@ -1,12 +1,26 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { HashRouter, Route, Switch, Redirect } from "react-router-dom";
 import Layout from "./Layout/Layout";
 import Error from "../pages/error/Error";
 import Login from "../pages/login/Login";
 import { useUserState } from "../context/UserContext";
+import { fetchContracts, useLedgerDispatch } from "../context/LedgerContext";
 
 export default function App() {
-  var { isAuthenticated } = useUserState();
+  const userState = useUserState();
+  const ledgerDispatch = useLedgerDispatch();
+
+  useEffect(() => {
+    if (userState.isAuthenticated && !!userState.token) {
+      fetchContracts(ledgerDispatch, userState.token, () => {}, () => {}); 
+        // var timer = setInterval(() => fetchContracts(ledgerDispatch, userState.token, () => {}, () => {}), 1000);
+    }
+
+    // return () => {
+    //   clearInterval(timer);
+    //   timer = null;
+    // }
+  });
 
   return (
     <HashRouter>
@@ -31,7 +45,7 @@ export default function App() {
       <Route
         {...rest}
         render={props =>
-          isAuthenticated ? (
+          userState.isAuthenticated ? (
             React.createElement(component, props)
           ) : (
             <Redirect
@@ -53,7 +67,7 @@ export default function App() {
       <Route
         {...rest}
         render={props =>
-          isAuthenticated ? (
+          userState.isAuthenticated ? (
             <Redirect
               to={{
                 pathname: "/",
