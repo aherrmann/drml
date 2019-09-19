@@ -15,12 +15,11 @@ template Author
     key author : Party
     maintainer key
 
-    choice ProposeBookDeal : ContractId (Proposal BookDeal)
+    nonconsuming choice ProposeBookDeal : ContractId (Proposal BookDeal)
       with
         bookDeal : BookDeal
       controller author
         do
-          _publisherContract <- fetchByKey @Publisher bookDeal.publisher
           create Proposal
             with
               proposer = author
@@ -104,18 +103,22 @@ template RoyaltyPayment
     publisher: Party
     author: Party
     bookISBN: ISBN
-    iouId: ContractId Iou
+    amount: Amount
   where
     signatory publisher
     observer author
 
     choice PayOut : ContractId Iou
+      with
+        iouId : ContractId Iou
       controller publisher
       do
         iou <- fetch iouId
         (dealId, deal) <- fetchByKey @BookDeal (author, publisher, bookISBN)
-        (authorPart, _) <- exercise iouId Split with newAmount = (iou.amount.value * deal.royalties)
-        exercise authorPart Transfer with newOwner = author
+
+        assert (iou.amount.value == amount.value * deal.royalties && iou.amount.currency == amount.currency)
+
+        exercise iouId Transfer with newOwner = author
 
 
 template BookVolumeLicenseCostlyProposal
@@ -126,7 +129,7 @@ template BookVolumeLicenseCostlyProposal
     signatory proposal.publisher
     observer proposal.reseller
 
-    choice AcceptAndPay : (ContractId BookVolumeLicense, ContractId RoyaltyPayment)
+    choice AcceptAndPay : (ContractId BookVolumeLicense, ContractId RoyaltyPayment, ContractId Iou)
       with
         iouId : ContractId Iou
       controller proposal.reseller
@@ -139,9 +142,9 @@ template BookVolumeLicenseCostlyProposal
           publisher = proposal.publisher
           author = proposal.book.author
           bookISBN = proposal.book.isbn
-          iouId = iouId
+          amount = cost
         volumeLicense <- create proposal
-        return (volumeLicense, payment)
+        return (volumeLicense, payment, iouId)
 
     choice RejectDontPay : ()
       controller proposal.reseller
@@ -215,11 +218,7 @@ testBookDeal = scenario
             publisher = publisher
             book = book
             royalties = 0.10
-    bookDealProposalId <- author `submit` create Proposal
-      with
-        proposer = author
-        receiver = publisher
-        proposal = bookDeal
+    bookDealProposalId <- author `submit` exercise authorId ProposeBookDeal with bookDeal
     bookDealId <- publisher `submit` exercise bookDealProposalId Accept
     bookDeal <- publisher `submit` fetch bookDealId
     let bookVolumeLicense = BookVolumeLicense
@@ -232,7 +231,7 @@ testBookDeal = scenario
         price = chf1000
         volumeLicense = bookVolumeLicense
 
-    (volumeLicenseId, royaltyPayment) <- reseller `submit` exercise bookVolumeProposal AcceptAndPay
+    (volumeLicenseId, royaltyPayment, iouForPublisher) <- reseller `submit` exercise bookVolumeProposal AcceptAndPay
       with
         iouId
     readerA <- getParty "Reader A"
@@ -244,7 +243,8 @@ testBookDeal = scenario
       with
         reader = readerB
 
-    publisher `submit` exercise royaltyPayment PayOut
+    (iouForAuthor, _) <- publisher `submit` exercise iouForPublisher Split with newAmount = 100.0
+    publisher `submit` exercise royaltyPayment PayOut with iouId = iouForAuthor
     return ()
 
 type AssetId = ContractId Asset
