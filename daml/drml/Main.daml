@@ -176,6 +176,13 @@ template BookVolumeLicense
             return ()
         create BookLicense with ..
 
+    choice TransferBookVolumeLicense: ContractId BookVolumeLicense
+      with
+        newReseller : Party
+      controller reseller
+      do
+        create BookVolumeLicense with reseller = newReseller; ..
+
 template BookLicense
   with
     reseller: Party
@@ -184,6 +191,8 @@ template BookLicense
   where
     signatory reseller
     observer reader
+    key (reseller, reader, book.isbn) : (Party, Party, ISBN)
+    maintainer key._1
 
     nonconsuming choice GrantReadingPermission: ContractId ReadingPermission
       with
