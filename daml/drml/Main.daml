@@ -35,7 +35,7 @@ template Publisher
     key publisher : Party
     maintainer key
 
-    choice OfferBookVolume : ContractId BookVolumeLicenseCostlyProposal
+    nonconsuming choice OfferBookVolume : ContractId BookVolumeLicenseCostlyProposal
       with
         volumeLicense : BookVolumeLicense
         price : Amount
