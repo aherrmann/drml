@@ -5,6 +5,7 @@ daml 1.2
 module Book where
 import DA.Action (when)
 import DA.Time
+import DA.List (delete)
 import Iou
 
 template Author
@@ -57,6 +58,49 @@ template Reseller
     signatory reseller
     key reseller : Party
     maintainer key
+
+    nonconsuming choice SubscribeConsumers : ContractId BookListing
+      with
+        consumers : [Party]
+      controller reseller
+      do
+        create BookListing
+          with
+            books = []
+            ..
+
+template Consumer
+  with
+    consumer : Party
+  where
+    signatory consumer
+    key consumer : Party
+    maintainer key
+
+template BookListing
+  with
+    reseller : Party
+    books : [ISBN]
+    consumers : [Party]
+  where
+    signatory reseller
+    key reseller : Party
+    maintainer key
+    observer consumers
+
+    choice EnlistBook : ContractId BookListing
+      with
+        book : ISBN
+      controller reseller
+      do
+        create this with books = book :: books
+
+    choice UnlistBook : ContractId BookListing
+      with
+        book : ISBN
+      controller reseller
+      do
+        create this with books = delete book books
 
 type ISBN = Text
 
@@ -214,6 +258,11 @@ template ReadingPermission
 
 testBookDeal = scenario
   do
+    readerA <- getParty "Reader A"
+    readerAId <- readerA `submit` create Consumer with consumer = readerA
+    readerB <- getParty "Reader B"
+    readerBId <- readerB `submit` create Consumer with consumer = readerB
+
     author <- getParty "BestAuthor"
     authorId <- author `submit` create Author with ..
 
@@ -222,6 +271,8 @@ testBookDeal = scenario
 
     reseller <- getParty "BestReseller"
     resellerId <- reseller `submit` create Reseller with ..
+
+    bookListingId <- reseller `submit` exercise resellerId SubscribeConsumers with consumers = [readerA, readerB]
 
     let chf1000 = Amount 1000.0 "CHF"
     bank <- getParty "BestBank"
@@ -267,6 +318,13 @@ testBookDeal = scenario
     bookLicenseB <- reseller `submit` exerciseByKey @BookVolumeLicense (reseller, book.isbn) CreateLicense
       with
         reader = readerB
+
+    reseller `submit`
+      do
+        volumeLicenseA <- fetch bookLicenseA
+        exerciseByKey @BookListing reseller EnlistBook
+          with
+            book = volumeLicenseA.book.isbn
 
     readingPermissionA <- reseller `submit` exercise bookLicenseA GrantReadingPermission with duration = minutes 1
     readingPermissionB <- reseller `submit` exercise bookLicenseB GrantReadingPermission with duration = minutes 1
