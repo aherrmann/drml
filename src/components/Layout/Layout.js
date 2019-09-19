@@ -6,12 +6,12 @@ import Header from "../Header/Header";
 import Sidebar from "../Sidebar/Sidebar";
 import { useLayoutState } from "../../context/LayoutContext";
 import Contracts from "../../pages/contracts/Contracts";
-import NewProposal from "../../pages/author/NewProposal";
-import NewBook from "../../pages/author/NewBook";
-import Deals from "../../pages/author/Deals";
-import Proposals from "../../pages/author/Proposals";
+import NewProposal from "../../pages/proposals/NewProposal";
+import NewBook from "../../pages/books/NewBook";
+import Deals from "../../pages/deals/Deals";
+import Proposals from "../../pages/proposals/Proposals";
 import { useLedgerState, getContract } from "../../context/LedgerContext";
-import Books from "../../pages/author/Books";
+import Books from "../../pages/books/Books";
 import { BorderAll, MenuBook, NoteAdd, CheckCircle } from "@material-ui/icons";
 
 function Layout(props) {
@@ -26,11 +26,11 @@ function Layout(props) {
   ];
 
   if (isAuthor) {
-    structure.push({ key : "newbook",     label: "NewBook",     path: "/app/author/books/new",      component: NewBook,     icon: <></>, hideInSidebar: true });
-    structure.push({ key : "newproposal", label: "NewProposal", path: "/app/author/proposals/new",  component: NewProposal, icon: <></>, hideInSidebar: true });
-    structure.push({ key : "books",       label: "Books",       path: "/app/author/books",          component: Books,       icon: <MenuBook /> });
-    structure.push({ key : "proposals",   label: "Proposals",   path: "/app/author/proposals",      component: Proposals,   icon: <NoteAdd /> });
-    structure.push({ key : "deals",       label: "Deals",       path: "/app/author/deals",          component: Deals,       icon: <CheckCircle /> });
+    structure.push({ key : "newbook",     label: "NewBook",     path: "/app/books/new",      component: NewBook,     icon: <></>, hideInSidebar: true });
+    structure.push({ key : "newproposal", label: "NewProposal", path: "/app/proposals/new",  component: NewProposal, icon: <></>, hideInSidebar: true });
+    structure.push({ key : "books",       label: "Books",       path: "/app/books",          component: Books,       icon: <MenuBook /> });
+    structure.push({ key : "proposals",   label: "Proposals",   path: "/app/proposals",      component: Proposals,   icon: <NoteAdd /> });
+    structure.push({ key : "deals",       label: "Deals",       path: "/app/deals",          component: Deals,       icon: <CheckCircle /> });
   }
 
   return (
@@ -45,7 +45,7 @@ function Layout(props) {
           >
             <div className={classes.fakeToolbar} />
             <Switch>
-              { structure.map(s => (<Route path={s.path} component={s.component} />)) }
+              { structure.map(s => (<Route {...s} />)) }
             </Switch>
           </div>
         </>

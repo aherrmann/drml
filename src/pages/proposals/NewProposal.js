@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Grid, Typography, Button, TextField, Fade } from "@material-ui/core";
 import { withRouter } from "react-router-dom";
-import { useStyles } from "./styles";
+import useStyles from "./styles";
 import { useUserState } from "../../context/UserContext";
 import { useLedgerState, getContract, useLedgerDispatch, sendCommand, fetchContracts } from "../../context/LedgerContext";
 
