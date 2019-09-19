@@ -25,24 +25,73 @@ function Login(props) {
       </div>
       <div className={classes.formContainer}>
         <div className={classes.form}>
-            <React.Fragment>
-              <Fade in={error}>
-                <Typography color="secondary" className={classes.errorMessage}>
-                  Something is wrong with your login or password :(
-                </Typography>
-              </Fade>
-              <TextField
-                id="email"
-                InputProps={{
-                  classes: {
-                    underline: classes.textFieldUnderline,
-                    input: classes.textField,
-                  },
-                }}
-                value={loginValue}
-                onChange={e => setLoginValue(e.target.value)}
-                onKeyDown={e => {
-                  if (e.key === "Enter") {
+          <React.Fragment>
+            <Fade in={error}>
+              <Typography color="secondary" className={classes.errorMessage}>
+                Something is wrong with your login or password :(
+              </Typography>
+            </Fade>
+            <TextField
+              id="email"
+              InputProps={{
+                classes: {
+                  underline: classes.textFieldUnderline,
+                  input: classes.textField,
+                },
+              }}
+              value={loginValue}
+              onChange={e => setLoginValue(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === "Enter") {
+                  loginUser(
+                    userDispatch,
+                    loginValue,
+                    passwordValue,
+                    props.history,
+                    setIsLoading,
+                    setError,
+                  )
+                }
+              }}
+              margin="normal"
+              placeholder="Email Adress"
+              type="email"
+              fullWidth
+            />
+            <TextField
+              id="password"
+              InputProps={{
+                classes: {
+                  underline: classes.textFieldUnderline,
+                  input: classes.textField,
+                },
+              }}
+              value={passwordValue}
+              onChange={e => setPasswordValue(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === "Enter") {
+                  loginUser(
+                    userDispatch,
+                    loginValue,
+                    passwordValue,
+                    props.history,
+                    setIsLoading,
+                    setError,
+                  )
+                }
+              }}
+              margin="normal"
+              placeholder="Password"
+              type="password"
+              fullWidth
+            />
+            <div className={classes.formButtons}>
+              {isLoading ? (
+                <CircularProgress size={26} className={classes.loginLoader} />
+              ) : (
+                <Button
+                  disabled={loginValue.length === 0}
+                  onClick={() =>
                     loginUser(
                       userDispatch,
                       loginValue,
@@ -52,64 +101,15 @@ function Login(props) {
                       setError,
                     )
                   }
-                }}
-                margin="normal"
-                placeholder="Email Adress"
-                type="email"
-                fullWidth
-              />
-              <TextField
-                id="password"
-                InputProps={{
-                  classes: {
-                    underline: classes.textFieldUnderline,
-                    input: classes.textField,
-                  },
-                }}
-                value={passwordValue}
-                onChange={e => setPasswordValue(e.target.value)}
-                onKeyDown={e => {
-                  if (e.key === "Enter") {
-                    loginUser(
-                      userDispatch,
-                      loginValue,
-                      passwordValue,
-                      props.history,
-                      setIsLoading,
-                      setError,
-                    )
-                  }
-                }}
-                margin="normal"
-                placeholder="Password"
-                type="password"
-                fullWidth
-              />
-              <div className={classes.formButtons}>
-                {isLoading ? (
-                  <CircularProgress size={26} className={classes.loginLoader} />
-                ) : (
-                  <Button
-                    disabled={loginValue.length === 0}
-                    onClick={() =>
-                      loginUser(
-                        userDispatch,
-                        loginValue,
-                        passwordValue,
-                        props.history,
-                        setIsLoading,
-                        setError,
-                      )
-                    }
-                    variant="contained"
-                    color="primary"
-                    size="large"
-                  >
-                    Login
-                  </Button>
-                )}
-              </div>
-            </React.Fragment>
+                  variant="contained"
+                  color="primary"
+                  size="large"
+                >
+                  Login
+                </Button>
+              )}
+            </div>
+          </React.Fragment>
         </div>
       </div>
     </Grid>

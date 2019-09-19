@@ -11,13 +11,13 @@ function Proposals({ history }) {
   const ledger = useLedgerState();
   const ledgerDispatch = useLedgerDispatch();
 
-  const proposals = getContracts(ledger, "Main", "BookDealProposal");
-  const isPublisher = !!getContract(ledger, "Main", "Publisher");
-  const isAuthor = !!getContract(ledger, "Main", "Author");
+  const proposals = getContracts(ledger, "Book", "BookDealProposal");
+  const isPublisher = !!getContract(ledger, "Book", "Publisher");
+  const isAuthor = !!getContract(ledger, "Book", "Author");
 
   const acceptProposal = async (c) => {
     const command = {
-      templateId: { moduleName: "Main", entityName: "BookDealProposal" },
+      templateId: { moduleName: "Book", entityName: "BookDealProposal" },
       contractId: c.contractId,
       choice: "Accept",
       argument: {},
@@ -29,7 +29,7 @@ function Proposals({ history }) {
 
   const rejectProposal = async (c) => {
     const command = {
-      templateId: { moduleName: "Main", entityName: "BookDealProposal" },
+      templateId: { moduleName: "Book", entityName: "BookDealProposal" },
       contractId: c.contractId,
       choice: "Reject",
       argument: {},
@@ -46,7 +46,12 @@ function Proposals({ history }) {
         : <PageTitle title="Proposals" /> }
       <Contracts
         contracts={proposals}
-        columns={[["Author", "argument.proposer"], ["ISBN", "argument.proposal.book.isbn"], ["Title", "argument.proposal.book.title"], ["Royalties", "argument.proposal.royalties"]]}
+        columns={[
+          isAuthor ? ["Publisher", "argument.receiver"] : ["Author", "argument.proposer"],
+          ["ISBN", "argument.proposal.book.isbn"],
+          ["Title", "argument.proposal.book.title"],
+          ["Royalties", "argument.proposal.royalties"]
+        ]}
         actions={isPublisher ? [["Accept", acceptProposal], ["Reject", rejectProposal]] : []}
       />
     </>

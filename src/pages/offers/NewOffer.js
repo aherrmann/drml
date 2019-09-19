@@ -16,10 +16,10 @@ function NewOffers({ history }) {
     setState({ ...state, [name]: event.target.value });
   });
 
-  const publisher = getContract(ledger, "Main", "Publisher");
+  const publisher = getContract(ledger, "Book", "Publisher");
 
   const offerVolumeLicense = async c => {
-    const templateId = { moduleName: "Main", entityName: "Publisher" };
+    const templateId = { moduleName: "Book", entityName: "Publisher" };
     const contractId = publisher.contractId;
     const choice = "OfferBookVolume";
     const argument = {

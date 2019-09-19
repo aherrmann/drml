@@ -6,7 +6,7 @@ import Contracts from "../../components/Contracts/Contracts";
 function Licenses({ history }) {
 
   const ledger = useLedgerState();
-  const licenses = getContracts(ledger, "Main", "BookLicense");
+  const licenses = getContracts(ledger, "Book", "BookLicense");
   
   return (
     <>

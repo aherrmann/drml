@@ -20,7 +20,7 @@ in [package.json](package.json) file.
 #### 3. Start the sandbox and JSON API
 
 ```
-daml build && daml sandbox --ledgerid DRML --scenario Main:testBookDeal .daml/dist/drml-0.0.1.dar
+daml build && daml sandbox --ledgerid DRML --scenario Book:testBookDeal .daml/dist/drml-0.0.1.dar
 ```
 and
 ```

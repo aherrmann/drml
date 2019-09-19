@@ -1,12 +1,13 @@
 import React from "react";
 import PageTitle from "../../components/PageTitle/PageTitle";
-import { useLedgerState, getContracts } from "../../context/LedgerContext";
+import { useLedgerState, getContracts, getContract } from "../../context/LedgerContext";
 import Contracts from "../../components/Contracts/Contracts";
 
 function Deals() {
 
   const ledger = useLedgerState();
-  const deals = getContracts(ledger, "Main", "BookDeal");
+  const isAuthor = !!getContract(ledger, "Book", "Author");
+  const deals = getContracts(ledger, "Book", "BookDeal");
 
   return (
     <>
@@ -14,7 +15,7 @@ function Deals() {
       <Contracts
         contracts={deals}
         columns={[
-          ["Author", "argument.author"],
+          isAuthor ? ["Publisher", "argument.publisher"] : ["Author", "argument.author"],
           ["ISBN", "argument.book.isbn"],
           ["Title", "argument.book.title"],
           ["Royalties", "argument.royalties"]

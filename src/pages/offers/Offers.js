@@ -10,9 +10,9 @@ function Offers({ history }) {
   const user = useUserState();
   const ledger = useLedgerState();
   const ledgerDispatch = useLedgerDispatch();
-  const offers = getContracts(ledger, "Main", "BookVolumeLicenseCostlyProposal");
-  const isPublisher = !!getContract(ledger, "Main", "Publisher");
-  const isReseller = !!getContract(ledger, "Main", "Reseller");
+  const offers = getContracts(ledger, "Book", "BookVolumeLicenseCostlyProposal");
+  const isPublisher = !!getContract(ledger, "Book", "Publisher");
+  const isReseller = !!getContract(ledger, "Book", "Reseller");
   
   const splitIou = async (amount, ccy) => {
     const ious = getContracts(ledger, "Iou", "Iou");
@@ -35,7 +35,7 @@ function Offers({ history }) {
     const ious = getContracts(ledger, "Iou", "Iou");
     const iou = ious.find(i => i.argument.amount.currency === c.argument.cost.currency && i.argument.amount.value === c.argument.cost.value);
     const command = {
-      templateId: { moduleName: "Main", entityName: "BookVolumeLicenseCostlyProposal" },
+      templateId: { moduleName: "Book", entityName: "BookVolumeLicenseCostlyProposal" },
       contractId: c.contractId,
       choice: "AcceptAndPay",
       argument: { iouId: iou.contractId },
@@ -47,7 +47,7 @@ function Offers({ history }) {
 
   const rejectOffer = async c => {
     const command = {
-      templateId: { moduleName: "Main", entityName: "BookDealProposal" },
+      templateId: { moduleName: "Book", entityName: "BookDealProposal" },
       contractId: c.contractId,
       choice: "RejectDontPay",
       argument: {},

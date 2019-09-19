@@ -21,9 +21,11 @@ function userReducer(state, action) {
 
 function UserProvider({ children }) {
   const token = localStorage.getItem("daml.token")
+  const user = localStorage.getItem("daml.user")
   var [state, dispatch] = React.useReducer(userReducer, {
     isAuthenticated: !!token,
-    token
+    token,
+    user
   });
 
   return (
@@ -66,6 +68,7 @@ function loginUser(dispatch, login, password, history, setIsLoading, setError) {
     const payload = { ledgerId, applicationId, party: login };
     const token = jwt.sign(payload, "secret");
     localStorage.setItem("daml.token", token);
+    localStorage.setItem("daml.user", login);
     dispatch({ type: "LOGIN_SUCCESS", token, user: login });
     setError(null);
     setIsLoading(false);
@@ -79,6 +82,7 @@ function loginUser(dispatch, login, password, history, setIsLoading, setError) {
 
 function signOut(dispatch, history) {
   localStorage.removeItem("daml.token");
+  localStorage.removeItem("daml.user");
   dispatch({ type: "SIGN_OUT_SUCCESS" });
   history.push("/login");
 }

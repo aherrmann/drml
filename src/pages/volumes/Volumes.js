@@ -9,12 +9,12 @@ function Volumes() {
   const user = useUserState();
   const ledger = useLedgerState();
   const ledgerDispatch = useLedgerDispatch();
-  const volumes = getContracts(ledger, "Main", "BookVolumeLicense");
-  const isReseller = !!getContract(ledger, "Main", "Reseller");
+  const volumes = getContracts(ledger, "Book", "BookVolumeLicense");
+  const isReseller = !!getContract(ledger, "Book", "Reseller");
   
   const createLicense = async (c, reader) => {
     const command = {
-      templateId: { moduleName: "Main", entityName: "BookVolumeLicense" },
+      templateId: { moduleName: "Book", entityName: "BookVolumeLicense" },
       contractId: c.contractId,
       choice: "CreateLicense",
       argument: { reader },

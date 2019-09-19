@@ -17,10 +17,10 @@ function NewProposal({ history }) {
   var [state, setState] = useState({ publisher: "", royalties: 0, isbn: "", title: "", content: "" });
   const handleChange = name => (event => { setState({ ...state, [name]: event.target.value }); });
 
-  const author = getContract(ledger, "Main", "Author");
+  const author = getContract(ledger, "Book", "Author");
 
   const proposeDeal = async () => {
-    const templateId = { moduleName: "Main", entityName: "Author" };
+    const templateId = { moduleName: "Book", entityName: "Author" };
     const contractId = author.contractId;
     const choice = "ProposeBookDeal";
     const argument = {
