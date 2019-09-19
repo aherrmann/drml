@@ -99,6 +99,25 @@ template Template t => Proposal t
       do
         pure ()
 
+template RoyaltyPayment
+  with
+    publisher: Party
+    author: Party
+    bookISBN: ISBN
+    iouId: ContractId Iou
+  where
+    signatory publisher
+    observer author
+
+    choice PayOut : ContractId Iou
+      controller publisher
+      do
+        iou <- fetch iouId
+        (dealId, deal) <- fetchByKey @BookDeal (author, publisher, bookISBN)
+        (authorPart, _) <- exercise iouId Split with newAmount = (iou.amount.value * deal.royalties)
+        exercise authorPart Transfer with newOwner = author
+
+
 template BookVolumeLicenseCostlyProposal
   with
     proposal : BookVolumeLicense
@@ -107,26 +126,22 @@ template BookVolumeLicenseCostlyProposal
     signatory proposal.publisher
     observer proposal.reseller
 
-    choice AcceptAndPay : ContractId BookVolumeLicense
+    choice AcceptAndPay : (ContractId BookVolumeLicense, ContractId RoyaltyPayment)
       with
-        cashId : ContractId Cash
+        iouId : ContractId Iou
       controller proposal.reseller
       do
-        cash <- fetch cashId
-        assert (cash.amount == cost)
-        cashId <- exercise cashId Transfer with newOwner = proposal.publisher
-        (bookDealId, bookDeal) <- fetchByKey @BookDeal
-          ( proposal.book.author
-          , proposal.publisher
-          , proposal.book.isbn
-          )
-        (authorPart, _) <- exercise cashId Split with newAmount = cost.value * bookDeal.royalties
-        create Iou
-          with
-            payer = proposal.publisher
-            owner = proposal.book.author
-            amount = authorPart
-        create proposal
+        iou <- fetch iouId
+        assert (iou.amount == cost)
+
+        iouId <- exercise iouId Transfer with newOwner = proposal.publisher
+        payment <- create RoyaltyPayment with
+          publisher = proposal.publisher
+          author = proposal.book.author
+          bookISBN = proposal.book.isbn
+          iouId = iouId
+        volumeLicense <- create proposal
+        return (volumeLicense, payment)
 
     choice RejectDontPay : ()
       controller proposal.reseller
@@ -173,10 +188,21 @@ testBookDeal = scenario
   do
     author <- getParty "BestAuthor"
     authorId <- author `submit` create Author with ..
+
     publisher <- getParty "BestPublisher"
     publisherId <- publisher `submit` create Publisher with ..
+
     reseller <- getParty "BestReseller"
     resellerId <- reseller `submit` create Reseller with ..
+
+    let chf1000 = Amount 1000.0 "CHF"
+    bank <- getParty "BestBank"
+    iouId <- bank `submit` create Iou
+              with
+                issuer = bank
+                owner = reseller
+                amount = chf1000
+
     let book = Book
           with
             author = author
@@ -194,7 +220,7 @@ testBookDeal = scenario
         proposer = author
         receiver = publisher
         proposal = bookDeal
-    bookDealId <- publisher `submit` exercise bookDealProposalId Accept 
+    bookDealId <- publisher `submit` exercise bookDealProposalId Accept
     bookDeal <- publisher `submit` fetch bookDealId
     let bookVolumeLicense = BookVolumeLicense
           with
@@ -203,15 +229,12 @@ testBookDeal = scenario
             ..
     bookVolumeProposal <- publisher `submit` exercise publisherId OfferBookVolume
       with
-        price = Amount 1000.0 "CHF"
+        price = chf1000
         volumeLicense = bookVolumeLicense
-    cashId <- reseller `submit` create Cash
+
+    (volumeLicenseId, royaltyPayment) <- reseller `submit` exercise bookVolumeProposal AcceptAndPay
       with
-        owner = reseller
-        amount = Amount 1000.0 "CHF"
-    volumeLicenseId <- reseller `submit` exercise bookVolumeProposal AcceptAndPay
-      with
-        cashId
+        iouId
     readerA <- getParty "Reader A"
     readerB <- getParty "Reader B"
     reseller `submit` exerciseByKey @BookVolumeLicense (reseller, book.isbn) CreateLicense
@@ -220,6 +243,8 @@ testBookDeal = scenario
     reseller `submit` exerciseByKey @BookVolumeLicense (reseller, book.isbn) CreateLicense
       with
         reader = readerB
+
+    publisher `submit` exercise royaltyPayment PayOut
     return ()
 
 type AssetId = ContractId Asset
