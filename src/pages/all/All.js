@@ -1,10 +1,10 @@
 import React from "react";
 import { useLedgerDispatch, sendCommand, useLedgerState } from "../../context/LedgerContext";
 import { useUserState } from "../../context/UserContext";
-import * as ContractsComponent from "../../components/Contracts/Contracts";
+import Contracts from "../../components/Contracts/Contracts";
 import PageTitle from "../../components/PageTitle/PageTitle";
 
-export default function Contracts() {
+export default function All() {
 
   const user = useUserState();
   const ledger = useLedgerState();
@@ -23,7 +23,7 @@ export default function Contracts() {
   return (
     <>
       <PageTitle title="Contracts" button="Exercise choice" onButtonClick={exerciseChoice}/>
-      <ContractsComponent contracts={ledger.contracts} />
+      <Contracts contracts={ledger.contracts} />
     </>
   );
 }
