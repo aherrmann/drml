@@ -3,7 +3,7 @@
 
 daml 1.2
 module Bankruptcy where
-import Main
+import Book
 
 template Bankrupt
   with

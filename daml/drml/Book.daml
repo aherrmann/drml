@@ -2,7 +2,7 @@
 -- SPDX-License-Identifier: Apache-2.0
 
 daml 1.2
-module Main where
+module Book where
 import DA.Action (when)
 import DA.Time
 import Iou
