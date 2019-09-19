@@ -18,10 +18,12 @@ function NewOffers({ history }) {
 
   const publisher = getContract(ledger, "Main", "Publisher");
 
-  const offerVolumeLicense = async () => {
+  const offerVolumeLicense = async c => {
     const templateId = { moduleName: "Main", entityName: "Publisher" };
+    const contractId = publisher.contractId;
+    const choice = "OfferBookVolume";
     const argument = {
-      volumeLicence: {
+      volumeLicense: {
         publisher: publisher.argument.publisher,
         reseller: state.reseller,
         volume: state.volume,
@@ -32,15 +34,15 @@ function NewOffers({ history }) {
           content: state.content
         }
       },
-      cost: {
+      price: {
         value: state.value,
         currency: state.currency
       }
     };
     const meta = { ledgerEffectiveTime: 0 }; // Required if sandbox runs with static time
-    const command = { templateId, argument, meta };
-    await sendCommand(ledgerDispatch, user.token, "create", command, e => { if (e) console.log("setIsSending: " + e) }, e => { if (e) console.log("setError:" + e) });
-    await fetchContracts(ledgerDispatch, user.token, () => console.log("Fetching contracts"), () => console.log("Error occurred"));
+    const command = { templateId, contractId, choice, argument, meta };
+    await sendCommand(ledgerDispatch, user.token, "exercise", command, () => {}, () => {});
+    await fetchContracts(ledgerDispatch, user.token, () => {}, () => {});
     history.push("/app/offers");
   }
 

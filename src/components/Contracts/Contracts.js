@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import ReactJson from "react-json-view";
-import { Grid, Table, TableHead, TableRow, TableCell, TableBody } from "@material-ui/core";
+import { Grid, Table, TableHead, TableRow, TableCell, TableBody, TextField } from "@material-ui/core";
 import { useStyles } from "./styles";
 import { Button } from "../Wrappers/Wrappers";
 
@@ -11,6 +11,8 @@ export default function Contracts({ contracts, columns, actions=[] }) {
   columns = columns ? columns : [ [ "Module", "templateId.moduleName" ], [ "Template", "templateId.entityName" ], [ "ContractId", "contractId" ] ];
 
   const classes = useStyles();
+  var [state, setState] = useState({});
+  const handleChange = name => (event => { setState({ ...state, [name]: event.target.value }); });
 
   function getByPath(data, path) {
     if (path.length === 0) return data;
@@ -23,7 +25,6 @@ export default function Contracts({ contracts, columns, actions=[] }) {
     const split = typeof path === "string" && path !== "" ? path.split(".") : [];
     return getByPath(data, split);
   }
-  
   
   return (
     <>
@@ -46,15 +47,23 @@ export default function Contracts({ contracts, columns, actions=[] }) {
                         <ReactJson src={c.argument} name={false} collapsed={true} enableClipboard={false}/>
                       </TableCell>)
                     : <></> }
-
                 { actions.map(action => (
                   <TableCell key={action[0]} className={classes.tableCell}>
+                      { action.length > 2
+                        ? <TextField
+                            InputProps={{ classes: { underline: classes.textFieldUnderline, input: classes.textField } }}
+                            onChange={handleChange(action[2])}
+                            onKeyDown={e => { if (e.key === "Enter") action[1](c, state[action[2]]); }}
+                            margin="normal"
+                            placeholder={action[2]}
+                          />
+                        : <></> }
                       <Button
                         color="primary"
                         size="small"
                         className="px-2"
                         variant="contained"
-                        onClick={() => action[1](c)}
+                        onClick={() => action[1](c, state[action[2]])}
                       >
                         {action[0]}
                       </Button>

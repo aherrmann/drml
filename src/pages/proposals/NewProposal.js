@@ -15,10 +15,7 @@ function NewProposal({ history }) {
 
   // local
   var [state, setState] = useState({ publisher: "", royalties: 0, isbn: "", title: "", content: "" });
-
-  const handleChange = name => (event => {
-    setState({ ...state, [name]: event.target.value });
-  });
+  const handleChange = name => (event => { setState({ ...state, [name]: event.target.value }); });
 
   const author = getContract(ledger, "Main", "Author");
 

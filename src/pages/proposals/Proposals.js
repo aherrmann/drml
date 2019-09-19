@@ -11,9 +11,9 @@ function Proposals({ history }) {
   const ledger = useLedgerState();
   const ledgerDispatch = useLedgerDispatch();
 
-  // const isAuthor = !!getContract(ledger, "Main", "Author");
   const proposals = getContracts(ledger, "Main", "BookDealProposal");
   const isPublisher = !!getContract(ledger, "Main", "Publisher");
+  const isAuthor = !!getContract(ledger, "Main", "Author");
 
   const acceptProposal = async (c) => {
     const command = {
@@ -41,7 +41,9 @@ function Proposals({ history }) {
 
   return (
     <>
-      <PageTitle title="Proposals" button="New Proposal" onButtonClick={() => history.push("/app/proposals/new")}/>
+      { isAuthor
+        ? <PageTitle title="Proposals" button="New Proposal" onButtonClick={() => history.push("/app/proposals/new")} />
+        : <PageTitle title="Proposals" /> }
       <Contracts
         contracts={proposals}
         columns={[["Author", "argument.proposer"], ["ISBN", "argument.proposal.book.isbn"], ["Title", "argument.proposal.book.title"], ["Royalties", "argument.proposal.royalties"]]}
