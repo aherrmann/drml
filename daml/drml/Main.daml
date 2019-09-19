@@ -11,7 +11,6 @@ template Author
     author : Party
   where
     signatory author
-    controller author can
     key author : Party
     maintainer key
 
@@ -31,7 +30,6 @@ template Publisher
     publisher : Party
   where
     signatory publisher
-    controller publisher can
     key publisher : Party
     maintainer key
 
@@ -56,7 +54,6 @@ template Reseller
     reseller : Party
   where
     signatory reseller
-    controller reseller can
     key reseller : Party
     maintainer key
 
