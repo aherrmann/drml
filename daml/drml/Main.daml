@@ -3,6 +3,7 @@
 
 daml 1.2
 module Main where
+import DA.Action (when)
 
 template Author
   with
@@ -73,9 +74,11 @@ data Book = Book
 template BookLicense
   with
     publisher: Party
+    reader: Party
     book: Book
   where
     signatory publisher
+    observer reader
 
 template Template t => Proposal t
   with
@@ -118,22 +121,19 @@ template BookVolumeLicense
   where
     signatory publisher, reseller
     ensure volume > 0
+    key (reseller, book.isbn) : (Party, ISBN)
+    maintainer key._1
 
-    choice CreateLicense: (Optional (ContractId BookVolumeLicense), ContractId BookLicense)
+    choice CreateLicense: ContractId BookLicense
+      with
+        reader : Party
       controller reseller
       do
         volumeLicense <-
-          if (volume == 1) then
-            return None
-          else
-            fmap Some $ create this
-              with
-                volume = volume - 1
-        bookLicense <- create BookLicense
-          with
-            publisher = publisher
-            book = book
-        return (volumeLicense, bookLicense)
+          when (volume > 1) do
+            create this with volume = volume - 1
+            return ()
+        create BookLicense with ..
 
 template instance BookVolumeLicenseProposal = Proposal BookVolumeLicense
 
@@ -173,7 +173,15 @@ testBookDeal = scenario
       with
         price = 1000
         volumeLicense = bookVolumeLicense
-    reseller `submit` exercise bookVolumeProposal Accept
+    volumeLicenseId <- reseller `submit` exercise bookVolumeProposal Accept
+    readerA <- getParty "Reader A"
+    readerB <- getParty "Reader B"
+    reseller `submit` exerciseByKey @BookVolumeLicense (reseller, book.isbn) CreateLicense
+      with
+        reader = readerA
+    reseller `submit` exerciseByKey @BookVolumeLicense (reseller, book.isbn) CreateLicense
+      with
+        reader = readerB
     return ()
 
 type AssetId = ContractId Asset
