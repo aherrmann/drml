@@ -3,6 +3,8 @@
 
 daml 1.2
 module Main where
+import DA.Action (when)
+import Iou
 
 template Author
   with
@@ -34,6 +36,22 @@ template Publisher
     key publisher : Party
     maintainer key
 
+    choice OfferBookVolume : ContractId BookVolumeLicenseCostlyProposal
+      with
+        volumeLicense : BookVolumeLicense
+        price : Amount
+      controller publisher
+      do
+        _bookDeal <- fetchByKey @BookDeal
+          ( volumeLicense.book.author
+          , volumeLicense.publisher
+          , volumeLicense.book.isbn
+          )
+        create BookVolumeLicenseCostlyProposal
+          with
+            proposal = volumeLicense
+            cost = price
+
 template Reseller
   with
     reseller : Party
@@ -43,13 +61,24 @@ template Reseller
     key reseller : Party
     maintainer key
 
-template Book
+type ISBN = Text
+
+data Book = Book
   with
+    isbn : ISBN
     content : Text
     title : Text
     author : Party
+  deriving (Eq, Show)
+
+template BookLicense
+  with
+    publisher: Party
+    reader: Party
+    book: Book
   where
-    signatory author
+    signatory publisher
+    observer reader
 
 template Template t => Proposal t
   with
@@ -70,40 +99,127 @@ template Template t => Proposal t
       do
         pure ()
 
+template BookVolumeLicenseCostlyProposal
+  with
+    proposal : BookVolumeLicense
+    cost : Amount
+  where
+    signatory proposal.publisher
+    observer proposal.reseller
+
+    choice AcceptAndPay : ContractId BookVolumeLicense
+      with
+        cashId : ContractId Cash
+      controller proposal.reseller
+      do
+        cash <- fetch cashId
+        assert (cash.amount == cost)
+        cashId <- exercise cashId Transfer with newOwner = proposal.publisher
+        (bookDealId, bookDeal) <- fetchByKey @BookDeal
+          ( proposal.book.author
+          , proposal.publisher
+          , proposal.book.isbn
+          )
+        (authorPart, _) <- exercise cashId Split with newAmount = cost.value * bookDeal.royalties
+        create Iou
+          with
+            payer = proposal.publisher
+            owner = proposal.book.author
+            amount = authorPart
+        create proposal
+
+    choice RejectDontPay : ()
+      controller proposal.reseller
+        do
+          pure ()
+
 template BookDeal
   with
     author : Party
     publisher : Party
     royalties : Decimal
-    book : ContractId Book
+    book : Book
   where
     signatory author, publisher
+    key (author, publisher, book.isbn) : (Party, Party, ISBN)
+    maintainer key._1, key._2
 
 template instance BookDealProposal = Proposal BookDeal
+
+template BookVolumeLicense
+  with
+    publisher : Party
+    reseller : Party
+    volume : Int
+    book : Book
+  where
+    signatory publisher, reseller
+    ensure volume > 0
+    key (reseller, book.isbn) : (Party, ISBN)
+    maintainer key._1
+
+    choice CreateLicense: ContractId BookLicense
+      with
+        reader : Party
+      controller reseller
+      do
+        volumeLicense <-
+          when (volume > 1) do
+            create this with volume = volume - 1
+            return ()
+        create BookLicense with ..
 
 testBookDeal = scenario
   do
     author <- getParty "BestAuthor"
-    authorId <- author `submit` create Author { author = author }
+    authorId <- author `submit` create Author with ..
     publisher <- getParty "BestPublisher"
-    publisherId <- publisher `submit` create Publisher { publisher = publisher }
-    book <- author `submit` create Book
-      with
-        author = author
-        title = "The best book"
-        content = "This is the best book"
+    publisherId <- publisher `submit` create Publisher with ..
+    reseller <- getParty "BestReseller"
+    resellerId <- reseller `submit` create Reseller with ..
+    let book = Book
+          with
+            author = author
+            title = "The best book"
+            content = "This is the best book"
+            isbn = "b3st-isbn"
     let bookDeal = BookDeal
           with
             author = author
             publisher = publisher
             book = book
             royalties = 0.10
-    proposal <- author `submit` create Proposal
+    bookDealProposalId <- author `submit` create Proposal
       with
         proposer = author
         receiver = publisher
         proposal = bookDeal
-    publisher `submit` exercise proposal Accept
+    bookDealId <- publisher `submit` exercise bookDealProposalId Accept 
+    bookDeal <- publisher `submit` fetch bookDealId
+    let bookVolumeLicense = BookVolumeLicense
+          with
+            volume = 100
+            book = bookDeal.book
+            ..
+    bookVolumeProposal <- publisher `submit` exercise publisherId OfferBookVolume
+      with
+        price = Amount 1000.0 "CHF"
+        volumeLicense = bookVolumeLicense
+    cashId <- reseller `submit` create Cash
+      with
+        owner = reseller
+        amount = Amount 1000.0 "CHF"
+    volumeLicenseId <- reseller `submit` exercise bookVolumeProposal AcceptAndPay
+      with
+        cashId
+    readerA <- getParty "Reader A"
+    readerB <- getParty "Reader B"
+    reseller `submit` exerciseByKey @BookVolumeLicense (reseller, book.isbn) CreateLicense
+      with
+        reader = readerA
+    reseller `submit` exerciseByKey @BookVolumeLicense (reseller, book.isbn) CreateLicense
+      with
+        reader = readerB
     return ()
 
 type AssetId = ContractId Asset
