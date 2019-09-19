@@ -4,6 +4,7 @@
 daml 1.2
 module Main where
 import DA.Action (when)
+import DA.Time
 import Iou
 
 template Author
@@ -66,15 +67,6 @@ data Book = Book
     title : Text
     author : Party
   deriving (Eq, Show)
-
-template BookLicense
-  with
-    publisher: Party
-    reader: Party
-    book: Book
-  where
-    signatory publisher
-    observer reader
 
 template Template t => Proposal t
   with
@@ -184,6 +176,33 @@ template BookVolumeLicense
             return ()
         create BookLicense with ..
 
+template BookLicense
+  with
+    reseller: Party
+    reader: Party
+    book: Book
+  where
+    signatory reseller
+    observer reader
+
+    nonconsuming choice GrantReadingPermission: ContractId ReadingPermission
+      with
+        duration : RelTime
+      controller reseller
+      do
+        now <- getTime
+        create ReadingPermission with expiration = addRelTime now duration; ..
+
+template ReadingPermission
+  with
+    reseller : Party
+    reader : Party
+    book : Book
+    expiration : Time
+  where
+    signatory reseller
+    observer reader
+
 testBookDeal = scenario
   do
     author <- getParty "BestAuthor"
@@ -231,14 +250,17 @@ testBookDeal = scenario
     (volumeLicenseId, royaltyPayment, iouForPublisher) <- reseller `submit` exercise bookVolumeProposal AcceptAndPay
       with
         iouId
-    readerA <- getParty "Reader A"
-    readerB <- getParty "Reader B"
-    reseller `submit` exerciseByKey @BookVolumeLicense (reseller, book.isbn) CreateLicense
+    readerA <- getParty "Reader:A"
+    readerB <- getParty "Reader:B"
+    bookLicenseA <- reseller `submit` exerciseByKey @BookVolumeLicense (reseller, book.isbn) CreateLicense
       with
         reader = readerA
-    reseller `submit` exerciseByKey @BookVolumeLicense (reseller, book.isbn) CreateLicense
+    bookLicenseB <- reseller `submit` exerciseByKey @BookVolumeLicense (reseller, book.isbn) CreateLicense
       with
         reader = readerB
+
+    readingPermissionA <- reseller `submit` exercise bookLicenseA GrantReadingPermission with duration = minutes 1
+    readingPermissionB <- reseller `submit` exercise bookLicenseB GrantReadingPermission with duration = minutes 1
 
     (iouForAuthor, _) <- publisher `submit` exercise iouForPublisher Split with newAmount = 100.0
     publisher `submit` exercise royaltyPayment PayOut with iouId = iouForAuthor
