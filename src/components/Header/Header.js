@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { withRouter } from "react-router-dom";
-import { AppBar, Toolbar, IconButton, CircularProgress, Avatar, Chip } from "@material-ui/core";
+import { AppBar, Toolbar, IconButton, CircularProgress, Chip } from "@material-ui/core";
 import {
   Menu as MenuIcon,
   ExitToApp as LogoutIcon,

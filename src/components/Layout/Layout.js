@@ -27,7 +27,7 @@ function Layout(props) {
   const isReseller = !!getContract(ledger, "Book", "Reseller");
 
   const structure = [
-    { key : "all", label: "Contracts", path: "/app/all", component: All, icon: <Reorder /> }
+    // { key : "all", label: "Contracts", path: "/app/all", component: All, icon: <Reorder /> }
   ];
 
   if (isAuthor) {
