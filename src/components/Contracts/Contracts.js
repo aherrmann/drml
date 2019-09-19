@@ -4,7 +4,7 @@ import { Grid, Table, TableHead, TableRow, TableCell, TableBody } from "@materia
 import { useStyles } from "./styles";
 import { Button } from "../Wrappers/Wrappers";
 
-export default function Contracts({ contracts, columns, actions }) {
+export default function Contracts({ contracts, columns, actions=[] }) {
 
   actions = actions ? actions : [];
   const isDefault = !columns;
