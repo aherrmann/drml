@@ -4,7 +4,7 @@ import ReactJson from "react-json-view";
 import { useStyles } from "./styles";
 import { Button } from "../Wrappers/Wrappers";
 
-export default function Contracts({ contracts, columns, actions }) {
+export default function Contracts({ contracts, columns, actions=[] }) {
 
   const classes = useStyles();
 
