@@ -1,0 +1,42 @@
+daml 1.2
+module Iou where
+data Amount = Amount {value: Decimal; currency: Text} deriving (Eq, Ord, Show)
+amountAsText (amount : Amount) : Text = show amount.value <> amount.currency
+template Cash
+  with
+    owner: Party
+    amount: Amount
+  where
+    signatory owner
+
+    choice Transfer : ContractId Cash
+      with
+        newOwner: Party
+      controller owner
+      do
+        create this with owner = newOwner
+
+    choice Split : (ContractId Cash, ContractId Cash)
+      with
+        newAmount: Decimal
+      controller owner
+      do
+        assert (0.0 < newAmount && newAmount < amount.value)
+        a <- create Cash with
+          owner = owner
+          amount = Amount newAmount amount.currency
+        b <- create Cash with
+          owner = owner
+          amount = Amount (amount.value - newAmount) amount.currency
+        return (a, b)
+
+template Iou
+  with
+    payer: Party
+    owner: Party
+    amount: ContractId Cash
+  where
+    signatory payer
+    controller owner can
+      Call : ContractId Cash do
+        exercise amount Transfer with newOwner = owner
