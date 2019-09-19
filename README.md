@@ -1,4 +1,4 @@
-# DAML App Template
+# DRML
 
 ## Quick Start
 
@@ -20,18 +20,14 @@ in [package.json](package.json) file.
 #### 3. Start the sandbox and JSON API
 
 ```
-daml build && daml sandbox --ledgerid myLedgerId --scenario Module:scenaro myDar.dar
+daml build && daml sandbox --ledgerid DRML --scenario Main:testBookDeal .daml/dist/drml-0.0.1.dar
 ```
 and
 ```
 daml json-api --ledger-host localhost --ledger-port 6865 --http-port 7575
 ```
 
-#### 3. Set your ledger ID
-
-Set the ledger id in `src/context/UserContext.js` in function `loginUser`. This should be the same value you used to start the sandbox in step 2.
-
-#### 3. Run `yarn start`
+#### 4. Run `yarn start`
 
 Runs the app in the development mode.
 

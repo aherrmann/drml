@@ -12,7 +12,10 @@ function Deals({ history }) {
   return (
     <>
       <PageTitle title="Deals" button="New Deal" onButtonClick={() => history.push("/app/author/newdeal")}/>
-      <Contracts contracts={deals} />
+      <Contracts
+        contracts={deals}
+        columns={[["Author", "argument.author"], ["ISBN", "argument.book.isbn"], ["Title", "argument.book.title"], ["Royalties", "argument.royalties"]]}
+      />
     </>
   );
 }

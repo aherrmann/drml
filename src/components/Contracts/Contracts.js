@@ -1,13 +1,30 @@
 import React from "react";
-import { Grid, Table, TableHead, TableRow, TableCell, TableBody } from "@material-ui/core";
 import ReactJson from "react-json-view";
+import { Grid, Table, TableHead, TableRow, TableCell, TableBody } from "@material-ui/core";
 import { useStyles } from "./styles";
 import { Button } from "../Wrappers/Wrappers";
 
 export default function Contracts({ contracts, columns, actions }) {
 
+  actions = actions ? actions : [];
+  const isDefault = !columns;
+  columns = columns ? columns : [ [ "Module", "templateId.moduleName" ], [ "Template", "templateId.entityName" ], [ "ContractId", "contractId" ] ];
+
   const classes = useStyles();
 
+  function getByPath(data, path) {
+    if (path.length === 0) return data;
+    if (data[path[0]] === undefined) throw new Error("Object doesn't have key '" + path[0] + "': " + JSON.stringify(data));
+    const value = getByPath(data[path[0]], path.slice(1));
+    return value;
+  }
+  
+  function getValue(data, path) {
+    const split = typeof path === "string" && path !== "" ? path.split(".") : [];
+    return getByPath(data, split);
+  }
+  
+  
   return (
     <>
       <Grid container spacing={4}>
@@ -15,23 +32,22 @@ export default function Contracts({ contracts, columns, actions }) {
         <Table className={classes.table} size="small">
           <TableHead>
             <TableRow className={classes.tableRow}>
-              <TableCell key="moduleName" className={classes.cell1}>Module</TableCell>
-              <TableCell key="entityName" className={classes.cell1}>Template</TableCell>
-              <TableCell key="contractId" className={classes.cell2}>ContractId</TableCell>
-              <TableCell key="argument" className={classes.cell3}>Argument</TableCell>
-              { actions.map(action => (<TableCell key={action[0]}>{action[0]}</TableCell>)) }
+              { columns.map(col =>    (<TableCell className={classes.tableCell} key={col[0]}>{col[0]}</TableCell>)) }
+              { isDefault ?           (<TableCell className={classes.tableCell} key="argument">Argument</TableCell>) : <></>}
+              { actions.map(action => (<TableCell className={classes.tableCell} key={action[0]}>{action[0]}</TableCell>)) }
             </TableRow>
           </TableHead>
           <TableBody>
             {contracts.map((c, i) => (
               <TableRow key={i} className={classes.tableRow}>
-                <TableCell key="moduleName" className={classes.tableCell}>{c.templateId.moduleName}</TableCell>
-                <TableCell key="entityName" className={classes.tableCell}>{c.templateId.entityName}</TableCell>
-                <TableCell key="contractId" className={classes.tableCell}>{c.contractId}</TableCell>
-                <TableCell key="argument" className={classes.tableCell}>
-                  <ReactJson src={c.argument} name={false} collapsed={true} enableClipboard={false}/>
-                </TableCell>
-                { actions.map((action) => (
+                { columns.map(col => (<TableCell key={col[0]} className={classes.tableCell}>{getValue(c, col[1])}</TableCell>)) }
+                { isDefault
+                    ? (<TableCell key="argument" className={classes.tableCell}>
+                        <ReactJson src={c.argument} name={false} collapsed={true} enableClipboard={false}/>
+                      </TableCell>)
+                    : <></> }
+
+                { actions.map(action => (
                   <TableCell key={action[0]} className={classes.tableCell}>
                       <Button
                         color="primary"
@@ -42,7 +58,8 @@ export default function Contracts({ contracts, columns, actions }) {
                       >
                         {action[0]}
                       </Button>
-                    </TableCell>)) }
+                    </TableCell>)
+                )}
               </TableRow>
             ))}
           </TableBody>

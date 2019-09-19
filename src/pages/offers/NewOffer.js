@@ -5,45 +5,43 @@ import useStyles from "./styles";
 import { useUserState } from "../../context/UserContext";
 import { useLedgerState, getContract, useLedgerDispatch, sendCommand, fetchContracts } from "../../context/LedgerContext";
 
-function NewProposal({ history }) {
-  var classes = useStyles();
-
-  // global
+function NewOffers({ history }) {
+  const classes = useStyles();
   const user = useUserState();
   const ledger = useLedgerState();
   const ledgerDispatch = useLedgerDispatch();
-
-  // local
-  var [state, setState] = useState({ publisher: "", royalties: 0, isbn: "", title: "", content: "" });
+  const [state, setState] = useState({ title: "", content: "" });
 
   const handleChange = name => (event => {
     setState({ ...state, [name]: event.target.value });
   });
 
-  const author = getContract(ledger, "Main", "Author");
+  const publisher = getContract(ledger, "Main", "Publisher");
 
-  const proposeDeal = async () => {
-    const templateId = { moduleName: "Main", entityName: "Author" };
-    const contractId = author.contractId;
-    const choice = "ProposeBookDeal";
+  const offerVolumeLicense = async () => {
+    const templateId = { moduleName: "Main", entityName: "Publisher" };
     const argument = {
-      bookDeal: {
-        author: author.argument.author,
-        publisher: state.publisher,
-        royalties: state.royalties,
+      volumeLicence: {
+        publisher: publisher.argument.publisher,
+        reseller: state.reseller,
+        volume: state.volume,
         book: {
+          author: state.author,
           isbn: state.isbn,
           title: state.title,
-          content: state.content,
-          author: author.argument.author
+          content: state.content
         }
+      },
+      cost: {
+        value: state.value,
+        currency: state.currency
       }
     };
     const meta = { ledgerEffectiveTime: 0 }; // Required if sandbox runs with static time
-    const command = { templateId, contractId, choice, argument, meta };
-    await sendCommand(ledgerDispatch, user.token, "exercise", command, () => {}, () => {});
-    await fetchContracts(ledgerDispatch, user.token, () => {}, () => {});
-    history.push("/app/proposals");
+    const command = { templateId, argument, meta };
+    await sendCommand(ledgerDispatch, user.token, "create", command, e => { if (e) console.log("setIsSending: " + e) }, e => { if (e) console.log("setError:" + e) });
+    await fetchContracts(ledgerDispatch, user.token, () => console.log("Fetching contracts"), () => console.log("Error occurred"));
+    history.push("/app/offers");
   }
 
   return (
@@ -53,24 +51,32 @@ function NewProposal({ history }) {
             <React.Fragment>
               <TextField
                 InputProps={{ classes: { underline: classes.textFieldUnderline, input: classes.textField } }}
-                onChange={handleChange("publisher")}
-                onKeyDown={e => { if (e.key === "Enter") proposeDeal(); }}
+                onChange={handleChange("reseller")}
+                onKeyDown={e => { if (e.key === "Enter") offerVolumeLicense(); }}
                 margin="normal"
-                placeholder="Publisher"
+                placeholder="Reseller"
                 fullWidth
               />
               <TextField
                 InputProps={{ classes: { underline: classes.textFieldUnderline, input: classes.textField } }}
-                onChange={handleChange("royalties")}
-                onKeyDown={e => { if (e.key === "Enter") proposeDeal(); }}
+                onChange={handleChange("volume")}
+                onKeyDown={e => { if (e.key === "Enter") offerVolumeLicense(); }}
                 margin="normal"
-                placeholder="Royalties (in %)"
+                placeholder="Volume"
+                fullWidth
+              />
+              <TextField
+                InputProps={{ classes: { underline: classes.textFieldUnderline, input: classes.textField } }}
+                onChange={handleChange("author")}
+                onKeyDown={e => { if (e.key === "Enter") offerVolumeLicense(); }}
+                margin="normal"
+                placeholder="Author"
                 fullWidth
               />
               <TextField
                 InputProps={{ classes: { underline: classes.textFieldUnderline, input: classes.textField } }}
                 onChange={handleChange("isbn")}
-                onKeyDown={e => { if (e.key === "Enter") proposeDeal(); }}
+                onKeyDown={e => { if (e.key === "Enter") offerVolumeLicense(); }}
                 margin="normal"
                 placeholder="ISBN"
                 fullWidth
@@ -78,7 +84,7 @@ function NewProposal({ history }) {
               <TextField
                 InputProps={{ classes: { underline: classes.textFieldUnderline, input: classes.textField } }}
                 onChange={handleChange("title")}
-                onKeyDown={e => { if (e.key === "Enter") proposeDeal(); }}
+                onKeyDown={e => { if (e.key === "Enter") offerVolumeLicense(); }}
                 margin="normal"
                 placeholder="Title"
                 fullWidth
@@ -86,18 +92,32 @@ function NewProposal({ history }) {
               <TextField
                 InputProps={{ classes: { underline: classes.textFieldUnderline, input: classes.textField } }}
                 onChange={handleChange("content")}
-                onKeyDown={e => { if (e.key === "Enter") proposeDeal(); }}
+                onKeyDown={e => { if (e.key === "Enter") offerVolumeLicense(); }}
                 margin="normal"
                 placeholder="Content"
+                fullWidth
+              />
+              <TextField
+                InputProps={{ classes: { underline: classes.textFieldUnderline, input: classes.textField } }}
+                onChange={handleChange("value")}
+                onKeyDown={e => { if (e.key === "Enter") offerVolumeLicense(); }}
+                margin="normal"
+                placeholder="Value"
+                fullWidth
+              />
+              <TextField
+                InputProps={{ classes: { underline: classes.textFieldUnderline, input: classes.textField } }}
+                onChange={handleChange("currency")}
+                onKeyDown={e => { if (e.key === "Enter") offerVolumeLicense(); }}
+                margin="normal"
+                placeholder="Currency"
                 fullWidth
               />
               <div className={classes.formButtons}>
                 <Grid container spacing={1} direction="row" justify="space-evenly" alignItems="center">
                   <Grid item xs={4}>
                     <Button
-                      onClick={() =>
-                        history.push("/app/author/proposals")
-                      }
+                      onClick={() => history.push("/app/offers")}
                       variant="contained"
                       color="primary"
                       size="large"
@@ -107,15 +127,13 @@ function NewProposal({ history }) {
                   </Grid>
                   <Grid item xs={4}>
                     <Button
-                      disabled={state.publisher === ""}
-                      onClick={() =>
-                        proposeDeal()
-                      }
+                      // disabled={state.publisher === ""}
+                      onClick={offerVolumeLicense}
                       variant="contained"
                       color="primary"
                       size="large"
                     >
-                      Propose
+                      Offer
                     </Button>
                   </Grid>
                 </Grid>
@@ -127,4 +145,4 @@ function NewProposal({ history }) {
   );
 }
 
-export default withRouter(NewProposal);
+export default withRouter(NewOffers);

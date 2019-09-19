@@ -6,18 +6,10 @@ export const useStyles = makeStyles(theme => ({
     // width: "auto"
   },
   tableCell: {
-    verticalAlign: "top",
+    // verticalAlign: "top",
     paddingTop: 6,
     paddingBottom: 6,
-    fontSize: "0.75rem"
-  },
-  cell1: {
-    width: "20%",
-  },
-  cell2: {
-    width: "5%",
-  },
-  cell3: {
+    fontSize: "0.75rem",
     width: "auto",
   },
   tableRow: {

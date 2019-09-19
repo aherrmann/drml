@@ -4,17 +4,17 @@ import PageTitle from "../../components/PageTitle/PageTitle";
 import { useLedgerState, getContracts } from "../../context/LedgerContext";
 import Contracts from "../../components/Contracts/Contracts";
 
-function Books({ history }) {
+function Offers({ history }) {
 
   const ledger = useLedgerState();
   const books = getContracts(ledger, "Main", "Book");
 
   return (
     <>
-      <PageTitle title="Book" button="New Book" onButtonClick={() => history.push("/app/author/books/new")}/>
-      <Contracts contracts={books} />
+      <PageTitle title="Book" button="New Book" onButtonClick={() => history.push("/app/deals/new")}/>
+      <Contracts contracts={books} columns={[[ "ISBN", "argument.isbn"], [ "Title", "argument.title" ], [ "Author", "argument.author" ]]}/>
     </>
   );
 }
 
-export default withRouter(Books);
+export default withRouter(Offers);

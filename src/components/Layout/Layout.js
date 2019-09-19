@@ -11,8 +11,10 @@ import Deals from "../../pages/deals/Deals";
 import Proposals from "../../pages/proposals/Proposals";
 import { useLedgerState, getContract } from "../../context/LedgerContext";
 import Books from "../../pages/books/Books";
-import { BorderAll, MenuBook, NoteAdd, CheckCircle } from "@material-ui/icons";
+import { BorderAll, MenuBook, NoteAdd, CheckCircle, AttachMoney } from "@material-ui/icons";
 import All from "../../pages/all/All";
+import Offers from "../../pages/offers/Offers";
+import NewOffer from "../../pages/offers/NewOffer";
 
 function Layout(props) {
   const classes = useStyles();
@@ -27,14 +29,13 @@ function Layout(props) {
   ];
 
   if (isAuthor) {
-    structure.push({ key : "newbook",     label: "NewBook",     path: "/app/books/new",      component: NewBook,     icon: <></>, hideInSidebar: true });
+    structure.push({ key : "newoffer",     label: "NewOffer",     path: "/app/offers/new",     component: NewOffer,     icon: <></>, hideInSidebar: true });
     structure.push({ key : "newproposal", label: "NewProposal", path: "/app/proposals/new",  component: NewProposal, icon: <></>, hideInSidebar: true });
-    structure.push({ key : "books",       label: "Books",       path: "/app/books",          component: Books,       icon: <MenuBook /> });
     structure.push({ key : "proposals",   label: "Proposals",   path: "/app/proposals",      component: Proposals,   icon: <NoteAdd /> });
     structure.push({ key : "deals",       label: "Deals",       path: "/app/deals",          component: Deals,       icon: <CheckCircle /> });
   } else if (isPublisher) {
     structure.push({ key : "proposals",   label: "Proposals",   path: "/app/proposals",      component: Proposals,   icon: <NoteAdd /> });
-    structure.push({ key : "deals",       label: "Deals",       path: "/app/deals",          component: Deals,       icon: <CheckCircle /> });
+    structure.push({ key : "Offers",      label: "Offers",      path: "/app/offers",         component: Offers,      icon: <AttachMoney /> });
   }
 
   return (
