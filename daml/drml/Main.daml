@@ -4,6 +4,108 @@
 daml 1.2
 module Main where
 
+template Author
+  with
+    author : Party
+  where
+    signatory author
+    controller author can
+    key author : Party
+    maintainer key
+
+    choice ProposeBookDeal : ContractId (Proposal BookDeal)
+      with
+        bookDeal : BookDeal
+      controller author
+        do
+          _publisherContract <- fetchByKey @Publisher bookDeal.publisher
+          create Proposal
+            with
+              proposer = author
+              receiver = bookDeal.publisher
+              proposal = bookDeal
+
+template Publisher
+  with
+    publisher : Party
+  where
+    signatory publisher
+    controller publisher can
+    key publisher : Party
+    maintainer key
+
+template Reseller
+  with
+    reseller : Party
+  where
+    signatory reseller
+    controller reseller can
+    key reseller : Party
+    maintainer key
+
+template Book
+  with
+    content : Text
+    title : Text
+    author : Party
+  where
+    signatory author
+
+template Template t => Proposal t
+  with
+    proposer: Party
+    receiver: Party
+    proposal: t
+  where
+    signatory proposer
+    observer receiver
+
+    choice Accept: ContractId t
+      controller receiver
+      do
+        create proposal
+
+    choice Reject: ()
+      controller receiver
+      do
+        pure ()
+
+template BookDeal
+  with
+    author : Party
+    publisher : Party
+    royalties : Decimal
+    book : ContractId Book
+  where
+    signatory author, publisher
+
+template instance BookDealProposal = Proposal BookDeal
+
+testBookDeal = scenario
+  do
+    author <- getParty "BestAuthor"
+    authorId <- author `submit` create Author { author = author }
+    publisher <- getParty "BestPublisher"
+    publisherId <- publisher `submit` create Publisher { publisher = publisher }
+    book <- author `submit` create Book
+      with
+        author = author
+        title = "The best book"
+        content = "This is the best book"
+    let bookDeal = BookDeal
+          with
+            author = author
+            publisher = publisher
+            book = book
+            royalties = 0.10
+    proposal <- author `submit` create Proposal
+      with
+        proposer = author
+        receiver = publisher
+        proposal = bookDeal
+    publisher `submit` exercise proposal Accept
+    return ()
+
 type AssetId = ContractId Asset
 
 template Asset
