@@ -294,9 +294,12 @@ data Parties = Parties {
   consumerIds : [ContractId Consumer]
 }
 
-setupBookDeal author authorId publisher book royalties = scenario do
+proposeBookDeal author authorId publisher book royalties = scenario do
   let bookDeal = BookDeal with ..
-  bdpId <- submit author do exercise authorId ProposeBookDeal with ..
+  submit author do exercise authorId ProposeBookDeal with ..
+
+setupBookDeal author authorId publisher book royalties = scenario do
+  bdpId <- proposeBookDeal author authorId publisher book royalties
   submit publisher do exercise bdpId Accept
 
 setupVolumeLicense issuer allParties publisher publisherId reseller volume book price = scenario do
