@@ -404,6 +404,7 @@ testBookDeal = scenario
                 issuer = bank
                 owner = reseller
                 amount = chf1000
+                observers = []
 
     let book = Book
           with
