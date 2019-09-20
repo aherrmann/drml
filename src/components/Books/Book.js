@@ -13,7 +13,7 @@ export default function Listings({isbn}) {
             })
             .catch(err => {
                 console.log("error fetching " + isbn, err)
-                setBook({"isbn": isbn, "title" : "unable to fetch title", "thumbnail": "unknown image"})
+                setBook({"isbn": isbn, "thumbnail": "unable to fetch image"})
         })
         return data;
     }
@@ -25,9 +25,8 @@ export default function Listings({isbn}) {
     return (
         <table>
             <tr>
-                <td>{book.title}</td>
                 <td>{book.isbn}</td>
-                <td><img src={book.thumbnail} alt={book.title} title={book.title}/></td>
+                <td><img src={book.thumbnail} alt={book.isbn} title={book.isbn}/></td>
             </tr>
         </table>
         )
