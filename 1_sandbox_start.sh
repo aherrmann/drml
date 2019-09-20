@@ -2,9 +2,6 @@
 
 set -eo pipefail
 
-# Change to the project base directory
-cd $(dirname "${BASH_SOURCE[0]}")
-
 # This will install both run-time project dependencies and developer tools listed in package.json.
 ./install.sh
 
@@ -16,4 +13,4 @@ cd daml
 daml build
 
 # Launch the sandbox
-daml sandbox --ledgerid DRML --scenario Book:testBookDeal .daml/dist/drml-0.0.1.dar
+daml sandbox --ledgerid DRML --scenario Book:setup .daml/dist/drml-0.0.1.dar

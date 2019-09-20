@@ -1,10 +1,25 @@
 sdk-version: 0.13.25
 name: drml
 source: drml
-# scenario: 
+scenario: Book:setup
 parties:
-  - Alice
-  - Bob
+  - BestAuthor
+  - Author1
+  - Author2
+  - Author3
+  - BestPublisher
+  - Publisher1
+  - Publisher2
+  - Publisher3
+  - BestReseller
+  - Reseller1
+  - Reseller2
+  - Reseller3
+  - Consumer:A
+  - Consumer:B
+  - Consumer1
+  - Consumer2
+  - Consumer3
 version: 0.0.1
 dependencies:
   - daml-prim

@@ -8,15 +8,27 @@ template Iou
     issuer: Party
     owner: Party
     amount: Amount
+    observers: [Party]
   where
     signatory issuer
-    observer owner
+    observer owner, observers
     ensure amount.value > 0.0
+
+    choice Disclose : ContractId Iou
+      with
+        newObserver : Party
+      controller owner
+      do
+        create this with observers = newObserver :: observers
 
     choice Transfer : ContractId Iou
       with newOwner : Party
       controller owner
-        do create this with owner = newOwner
+        do
+          create this
+            with
+              owner = newOwner
+              observers = []
 
     choice Split : (ContractId Iou, ContractId Iou)
       with
