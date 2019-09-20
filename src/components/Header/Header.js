@@ -103,6 +103,9 @@ function Header({ history }) {
         >
           <LogoutIcon classes={{ root: classes.headerIcon }} />
         </IconButton>
+        <Typography variant="subtitle1" weight="medium">
+          {user.user}
+        </Typography>
       </Toolbar>
     </AppBar>
   );
