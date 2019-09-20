@@ -5,7 +5,7 @@ import useStyles from "./styles";
 import { useUserState } from "../../context/UserContext";
 import { useLedgerState, getContract, useLedgerDispatch, sendCommand, fetchContracts, getContracts } from "../../context/LedgerContext";
 
-function NewBankrupcy({ history }) {
+function NewBankruptcy({ history }) {
   var classes = useStyles();
 
   // global
@@ -19,7 +19,7 @@ function NewBankrupcy({ history }) {
 
   const reseller = getContract(ledger, "Book", "Reseller");
 
-  const proposeBankrupcy = async () => {
+  const proposeBankruptcy = async () => {
     const templateId = { moduleName: "Bankruptcy", entityName: "BankruptcyDeclaration" };
     const publishers = getContracts(ledger, "Book", "BookVolumeLicense").map(bvl => bvl.argument.publisher);
     const consumers = getContracts(ledger, "Book", "BookLicense").map(bl => bl.argument.reader);
@@ -28,7 +28,7 @@ function NewBankrupcy({ history }) {
       proposer: reseller.argument.reseller,
       receiver: state.reseller,
       proposal: {
-        reseller: reseller.argument.reseller,
+        bankruptReseller: reseller.argument.reseller,
         newReseller: state.reseller,
         affectedParties
       }
@@ -37,7 +37,7 @@ function NewBankrupcy({ history }) {
     const command = { templateId, argument, meta };
     await sendCommand(ledgerDispatch, user.token, "create", command, () => {}, () => {});
     await fetchContracts(ledgerDispatch, user.token, () => {}, () => {});
-    history.push("/app/bankrupcy");
+    history.push("/app/bankruptcy");
   }
 
   return (
@@ -61,7 +61,7 @@ function NewBankrupcy({ history }) {
                 <Grid container spacing={1} direction="row" justify="space-evenly" alignItems="center">
                   <Grid item xs={4}>
                     <Button
-                      onClick={() => history.push("/app/bankrupcy")}
+                      onClick={() => history.push("/app/bankruptcy")}
                       variant="contained"
                       color="primary"
                       size="large"
@@ -71,12 +71,12 @@ function NewBankrupcy({ history }) {
                   </Grid>
                   <Grid item xs={4}>
                     <Button
-                      onClick={() => proposeBankrupcy()}
+                      onClick={() => proposeBankruptcy()}
                       variant="contained"
                       color="primary"
                       size="large"
                     >
-                      Declare Bankrupcy
+                      Declare Bankruptcy
                     </Button>
                   </Grid>
                 </Grid>
@@ -88,4 +88,4 @@ function NewBankrupcy({ history }) {
   );
 }
 
-export default withRouter(NewBankrupcy);
+export default withRouter(NewBankruptcy);
