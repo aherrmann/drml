@@ -37,7 +37,7 @@ template BankruptcyAgreement
 
 template instance BankruptcyDeclaration = Proposal BankruptcyAgreement
 
-bankrupt = scenario do
+demoAfterBankrupt = scenario do
   -- Initialize ledger with scenario from Book module.
   (Parties{..}, books) <- setup
       
