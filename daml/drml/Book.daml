@@ -434,12 +434,36 @@ testBookDeal = scenario
     (volumeLicenseId, royaltyPayment, iouForPublisher) <- reseller `submit` exercise bookVolumeProposal AcceptAndPay
       with
         iouId
-    bookLicenseA <- reseller `submit` exerciseByKey @BookVolumeLicense (reseller, book.isbn) CreateLicense
+
+    iouAId <- bank `submit` create Iou
       with
-        reader = consumerA
-    bookLicenseB <- reseller `submit` exerciseByKey @BookVolumeLicense (reseller, book.isbn) CreateLicense
+        issuer = bank
+        owner = consumerA
+        amount = Amount 10.0 "CHF"
+        observers = []
+    iouAId <- consumerA `submit` exercise iouAId Disclose with newObserver = reseller
+    purchaseAProposalId <- consumerA `submit` exercise consumerAId BuyBook
       with
-        reader = consumerB
+        reseller = reseller
+        book = book.isbn
+        payment = iouAId
+    purchaseAId <- reseller `submit` exercise purchaseAProposalId Accept
+    bookLicenseA <- reseller `submit` exercise purchaseAId AcceptPurchase
+
+    iouBId <- bank `submit` create Iou
+      with
+        issuer = bank
+        owner = consumerB
+        amount = Amount 10.0 "CHF"
+        observers = []
+    iouBId <- consumerB `submit` exercise iouBId Disclose with newObserver = reseller
+    purchaseBProposalId <- consumerB `submit` exercise consumerBId BuyBook
+      with
+        reseller = reseller
+        book = book.isbn
+        payment = iouBId
+    purchaseBId <- reseller `submit` exercise purchaseBProposalId Accept
+    bookLicenseB <- reseller `submit` exercise purchaseBId AcceptPurchase
 
     reseller `submit`
       do
