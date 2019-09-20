@@ -40,10 +40,10 @@ template instance BankruptcyDeclaration = Proposal BankruptcyAgreement
 
 demoAfterBankrupt = scenario do
   -- Initialize ledger with scenario from Book module.
-  (Parties{..}, books) <- demoBeforeBankrupt
+  (Parties{..}, books, iou10) <- demoBeforeBankrupt
 
   -- Done in demo before bankrupt
-  inDemoPurchaseBook (resellers!!0) (consumers!!0) (seconds 0) True
+  inDemoPurchaseBook iou10 (resellers!!0) (consumers!!0) (seconds 0) True
       
   let bankruptReseller = resellers!!0
   let newReseller = resellers!!2

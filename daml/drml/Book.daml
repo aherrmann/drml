@@ -380,17 +380,16 @@ setup = scenario do
 
   pure (parties, books)
 
-inDemoPurchaseBook reseller consumer duration expired = scenario
+inDemoPurchaseBook iou10 reseller consumer duration expired = scenario
   do
     (resellerId, _) <- reseller `submit` fetchByKey @Reseller reseller
     (consumerId, _) <- consumer `submit` fetchByKey @Consumer consumer
     issuer <- getParty "Bank"
-    chf10Id <- issuer `submit` create Iou with issuer; owner = consumer; observers = []; amount = Amount 10.0 "CHF"
     purchase <- consumer `submit`
       do
         (_, listing) <- fetchByKey @BookListing reseller
         let book = listing.books!!0
-        payment <- exercise chf10Id Disclose with newObserver = reseller
+        payment <- exercise iou10 Disclose with newObserver = reseller
         exercise consumerId BuyBook with ..
     reseller `submit` exercise purchase AcceptPurchase with ..
 
@@ -399,10 +398,12 @@ demoBeforeBankrupt = scenario
     (parties@Parties {..}, books) <- setup
     issuer <- getParty "Bank"
 
+    iou10 <- issuer `submit` create Iou with issuer; owner = consumers!!0; observers = []; amount = Amount 10.0 "CHF"
+
     -- Do this during demo
     -- inDemoPurchaseBook (resellers!!0) (consumers!!0) (seconds 10) False
 
-    return (parties, books)
+    return (parties, books, iou10)
   
 testBookDeal = scenario
   do
