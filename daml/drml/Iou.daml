@@ -28,7 +28,8 @@ template Iou
           create this
             with
               owner = newOwner
-              observers = []
+              -- Keep all Ious visible to all parties
+              -- observers = []
 
     choice Split : (ContractId Iou, ContractId Iou)
       with

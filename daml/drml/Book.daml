@@ -299,10 +299,10 @@ setupBookDeal author authorId publisher book royalties = scenario do
   bdpId <- submit author do exercise authorId ProposeBookDeal with ..
   submit publisher do exercise bdpId Accept
 
-setupVolumeLicense issuer publisher publisherId reseller volume book price = scenario do
+setupVolumeLicense issuer allParties publisher publisherId reseller volume book price = scenario do
   let
     volumeLicense = BookVolumeLicense with ..
-    iou = Iou with owner = reseller; observers = []; amount = price; ..
+    iou = Iou with owner = reseller; observers = allParties; amount = price; ..
   iouId <- submit issuer do create iou
   bvlpId <- submit publisher do exercise publisherId OfferBookVolume with ..
   submit reseller do
@@ -329,10 +329,12 @@ setup = scenario do
 
   -- IOUs
   issuer <- getParty "Bank"
-  authorIouIds    <- mapA (\p -> submit issuer do create Iou with issuer; owner = p; observers = []; amount = Amount 10.0 "CHF") authors
-  publisherIouIds <- mapA (\p -> submit issuer do create Iou with issuer; owner = p; observers = []; amount = Amount 1000.0 "CHF") publishers
-  resellerIouIds  <- mapA (\p -> submit issuer do create Iou with issuer; owner = p; observers = []; amount = Amount 10000.0 "CHF") resellers
-  consumerIouIds  <- mapA (\p -> submit issuer do create Iou with issuer; owner = p; observers = []; amount = Amount 100.0 "CHF") consumers
+  let allParties = authors ++ publishers ++ resellers ++ consumers
+  let issueIou chfAmount owner = issuer `submit` create Iou with observers = allParties; amount = Amount chfAmount "CHF"; ..
+  authorIouIds    <- mapA (issueIou 10.0) authors
+  publisherIouIds <- mapA (issueIou 1000.0) publishers
+  resellerIouIds  <- mapA (issueIou 10000.0) resellers
+  consumerIouIds  <- mapA (issueIou 100.0) consumers
 
   -- Book deals
   let
@@ -351,18 +353,18 @@ setup = scenario do
   bdId6 <- setupBookDeal (authors!!2) (authorIds!!2) (publishers!!2) (books!!5) 0.06
 
   -- Volume licenses
-  (bvlId1 , rpId1 , _) <- setupVolumeLicense issuer (publishers!!0) (publisherIds!!0) (resellers!!0) 100 (books!!0) (Amount 1000.0 "CHF")
-  (bvlId2 , rpId2 , _) <- setupVolumeLicense issuer (publishers!!0) (publisherIds!!0) (resellers!!0) 100 (books!!3) (Amount 1000.0 "CHF")
-  (bvlId3 , rpId3 , _) <- setupVolumeLicense issuer (publishers!!1) (publisherIds!!1) (resellers!!0) 100 (books!!1) (Amount 1000.0 "CHF")
-  (bvlId4 , rpId4 , _) <- setupVolumeLicense issuer (publishers!!1) (publisherIds!!1) (resellers!!0) 100 (books!!4) (Amount 1000.0 "CHF")
-  (bvlId5 , rpId5 , _) <- setupVolumeLicense issuer (publishers!!2) (publisherIds!!2) (resellers!!0) 100 (books!!2) (Amount 1000.0 "CHF")
-  (bvlId6 , rpId6 , _) <- setupVolumeLicense issuer (publishers!!2) (publisherIds!!2) (resellers!!0) 100 (books!!5) (Amount 1000.0 "CHF")
-  (bvlId7 , rpId7 , _) <- setupVolumeLicense issuer (publishers!!0) (publisherIds!!0) (resellers!!1) 100 (books!!0) (Amount 1000.0 "CHF")
-  (bvlId8 , rpId8 , _) <- setupVolumeLicense issuer (publishers!!0) (publisherIds!!0) (resellers!!1) 100 (books!!3) (Amount 1000.0 "CHF")
-  (bvlId9 , rpId9 , _) <- setupVolumeLicense issuer (publishers!!1) (publisherIds!!1) (resellers!!1) 100 (books!!1) (Amount 1000.0 "CHF")
-  (bvlId10, rpId10, _) <- setupVolumeLicense issuer (publishers!!1) (publisherIds!!1) (resellers!!1) 100 (books!!4) (Amount 1000.0 "CHF")
-  (bvlId11, rpId11, _) <- setupVolumeLicense issuer (publishers!!2) (publisherIds!!2) (resellers!!1) 100 (books!!2) (Amount 1000.0 "CHF")
-  (bvlId12, rpId12, _) <- setupVolumeLicense issuer (publishers!!2) (publisherIds!!2) (resellers!!1) 100 (books!!5) (Amount 1000.0 "CHF")
+  (bvlId1 , rpId1 , _) <- setupVolumeLicense issuer allParties (publishers!!0) (publisherIds!!0) (resellers!!0) 100 (books!!0) (Amount 1000.0 "CHF")
+  (bvlId2 , rpId2 , _) <- setupVolumeLicense issuer allParties (publishers!!0) (publisherIds!!0) (resellers!!0) 100 (books!!3) (Amount 1000.0 "CHF")
+  (bvlId3 , rpId3 , _) <- setupVolumeLicense issuer allParties (publishers!!1) (publisherIds!!1) (resellers!!0) 100 (books!!1) (Amount 1000.0 "CHF")
+  (bvlId4 , rpId4 , _) <- setupVolumeLicense issuer allParties (publishers!!1) (publisherIds!!1) (resellers!!0) 100 (books!!4) (Amount 1000.0 "CHF")
+  (bvlId5 , rpId5 , _) <- setupVolumeLicense issuer allParties (publishers!!2) (publisherIds!!2) (resellers!!0) 100 (books!!2) (Amount 1000.0 "CHF")
+  (bvlId6 , rpId6 , _) <- setupVolumeLicense issuer allParties (publishers!!2) (publisherIds!!2) (resellers!!0) 100 (books!!5) (Amount 1000.0 "CHF")
+  (bvlId7 , rpId7 , _) <- setupVolumeLicense issuer allParties (publishers!!0) (publisherIds!!0) (resellers!!1) 100 (books!!0) (Amount 1000.0 "CHF")
+  (bvlId8 , rpId8 , _) <- setupVolumeLicense issuer allParties (publishers!!0) (publisherIds!!0) (resellers!!1) 100 (books!!3) (Amount 1000.0 "CHF")
+  (bvlId9 , rpId9 , _) <- setupVolumeLicense issuer allParties (publishers!!1) (publisherIds!!1) (resellers!!1) 100 (books!!1) (Amount 1000.0 "CHF")
+  (bvlId10, rpId10, _) <- setupVolumeLicense issuer allParties (publishers!!1) (publisherIds!!1) (resellers!!1) 100 (books!!4) (Amount 1000.0 "CHF")
+  (bvlId11, rpId11, _) <- setupVolumeLicense issuer allParties (publishers!!2) (publisherIds!!2) (resellers!!1) 100 (books!!2) (Amount 1000.0 "CHF")
+  (bvlId12, rpId12, _) <- setupVolumeLicense issuer allParties (publishers!!2) (publisherIds!!2) (resellers!!1) 100 (books!!5) (Amount 1000.0 "CHF")
 
   -- Licenses
   blId1  <- submit (resellers!!0) do exercise bvlId1 CreateLicense with reader = consumers!!0
@@ -398,7 +400,8 @@ demoBeforeBankrupt = scenario
     (parties@Parties {..}, books) <- setup
     issuer <- getParty "Bank"
 
-    iou10 <- issuer `submit` create Iou with issuer; owner = consumers!!0; observers = []; amount = Amount 10.0 "CHF"
+    let allParties = authors ++ publishers ++ resellers ++ consumers
+    iou10 <- issuer `submit` create Iou with issuer; owner = consumers!!0; observers = allParties; amount = Amount 10.0 "CHF"
 
     -- Do this during demo
     -- inDemoPurchaseBook (resellers!!0) (consumers!!0) (seconds 10) False
