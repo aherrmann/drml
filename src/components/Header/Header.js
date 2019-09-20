@@ -1,18 +1,19 @@
 import React, { useState } from "react";
 import { withRouter } from "react-router-dom";
-import { AppBar, Toolbar, IconButton, CircularProgress, Chip } from "@material-ui/core";
+import { AppBar, Toolbar, IconButton, CircularProgress, Chip, Avatar } from "@material-ui/core";
 import {
   Menu as MenuIcon,
   ExitToApp as LogoutIcon,
   ArrowBack as ArrowBackIcon,
   Refresh,
+  TrendingDown,
 } from "@material-ui/icons";
 import classNames from "classnames";
 import useStyles from "./styles";
 import { Badge, Typography } from "../Wrappers/Wrappers";
 import { useLayoutState, useLayoutDispatch, toggleSidebar } from "../../context/LayoutContext";
 import { useUserDispatch, signOut, useUserState } from "../../context/UserContext";
-import { useLedgerState, useLedgerDispatch, fetchContracts, getContracts } from "../../context/LedgerContext";
+import { useLedgerState, useLedgerDispatch, fetchContracts, getContracts, getContract } from "../../context/LedgerContext";
 
 function Header({ history }) {
   const classes = useStyles();
@@ -28,6 +29,7 @@ function Header({ history }) {
   // local
   const [isFetching, setIsFetching] = useState(false);
 
+  const isReseller = !!getContract(ledger, "Book", "Reseller");
   const ious = getContracts(ledger, "Iou", "Iou").filter(c => c.argument.owner === user.user);
   const balance = ious.map(c => parseFloat(c.argument.amount.value)).reduce((a,b) => a + b, 0);
   const currency = ious.length > 0 ? ious[0].argument.amount.currency : "";
@@ -66,8 +68,16 @@ function Header({ history }) {
           DRML
         </Typography>
         <div className={classes.grow} />
+        { isReseller
+          ? <Chip
+              avatar={<Avatar><TrendingDown /></Avatar>}
+              label="Bankruptcy"
+              className={classes.chip}
+              color="secondary"
+              onClick={() => history.push("/app/bankruptcy/new")} />
+          : <></> }
         { balance > 0
-          ? <Chip label={balance + " " + currency} className={classes.chip} variant="outlined" />
+          ? <Chip label={balance + " " + currency} className={classes.chip} color="secondary" />
           : <></> }
         <IconButton
           color="inherit"

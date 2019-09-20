@@ -92,9 +92,7 @@ function NewProposal({ history }) {
                 <Grid container spacing={1} direction="row" justify="space-evenly" alignItems="center">
                   <Grid item xs={4}>
                     <Button
-                      onClick={() =>
-                        history.push("/app/author/proposals")
-                      }
+                      onClick={() => history.push("/app/proposals")}
                       variant="contained"
                       color="primary"
                       size="large"
@@ -105,9 +103,7 @@ function NewProposal({ history }) {
                   <Grid item xs={4}>
                     <Button
                       disabled={state.publisher === ""}
-                      onClick={() =>
-                        proposeDeal()
-                      }
+                      onClick={() => proposeDeal()}
                       variant="contained"
                       color="primary"
                       size="large"
