@@ -19,6 +19,7 @@ import Royalties from "../../pages/royalties/Royalties";
 import NewBankruptcy from "../../pages/bankruptcy/NewBankruptcy";
 import Bankruptcy from "../../pages/bankruptcy/Bankruptcy";
 import Listings from "../../pages/listings/Listings";
+import Purchases from "../../pages/purchases/Purchases";
 
 function Layout(props) {
   const classes = useStyles();
@@ -39,20 +40,21 @@ function Layout(props) {
     structure.push({ key : "proposals",     label: "Proposals",   path: "/app/proposals",      component: Proposals,     icon: <NoteAdd /> });
     structure.push({ key : "deals",         label: "Deals",       path: "/app/deals",          component: Deals,         icon: <CheckCircle /> });
     structure.push({ key : "royalties",     label: "Royalties",   path: "/app/royalties",      component: Royalties,     icon: <AttachMoney /> });
-  } else if (isPublisher) {    
+  } else if (isPublisher) {
     structure.push({ key : "proposals",     label: "Proposals",   path: "/app/proposals",      component: Proposals,     icon: <NoteAdd /> });
     structure.push({ key : "deals",         label: "Deals",       path: "/app/deals",          component: Deals,         icon: <CheckCircle /> });
     structure.push({ key : "newoffer",      label: "NewOffer",    path: "/app/offers/new",     component: NewOffer,      icon: <></>, hideInSidebar: true });
     structure.push({ key : "offers",        label: "Offers",      path: "/app/offers",         component: Offers,        icon: <Money /> });
     structure.push({ key : "royalties",     label: "Royalties",   path: "/app/royalties",      component: Royalties,     icon: <AttachMoney /> });
     if (hasBankruptcy) structure.push({ key : "bankruptcy",    label: "Bankruptcy",  path: "/app/bankruptcy",     component: Bankruptcy,    icon: <TrendingDown /> });
-  } else if (isReseller) {    
+  } else if (isReseller) {
     structure.push({ key : "offers",        label: "Offers",      path: "/app/offers",         component: Offers,        icon: <Money /> });
     structure.push({ key : "volumes",       label: "Volumes",     path: "/app/volumes",        component: Volumes,       icon: <DynamicFeed /> });
     structure.push({ key : "licenses",      label: "Licenses",    path: "/app/licenses",       component: Licenses,      icon: <MenuBook /> });
     structure.push({ key : "newbankruptcy", label: "Bankruptcy",  path: "/app/bankruptcy/new", component: NewBankruptcy, icon: <TrendingDown />, hideInSidebar: true });
+    structure.push({ key : "purchases",   label: "Purchases",     path: "/app/purchases",      component: Purchases,   icon: <AttachMoney /> });
     if (hasBankruptcy) structure.push({ key : "bankruptcy",    label: "Bankruptcy",  path: "/app/bankruptcy",     component: Bankruptcy,    icon: <TrendingDown /> });
-  } else {  
+  } else {
     structure.push({ key : "licenses",      label: "Licenses",    path: "/app/licenses",       component: Licenses,      icon: <MenuBook /> });
     structure.push({ key : "listings",      label: "Book Listings", path: "/app/listings",       component: Listings,    icon: <MenuBook /> });
     if (hasBankruptcy) structure.push({ key : "bankruptcy",    label: "Bankruptcy",  path: "/app/bankruptcy",     component: Bankruptcy,    icon: <TrendingDown /> });

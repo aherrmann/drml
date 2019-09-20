@@ -9,12 +9,11 @@ export default function Listings({isbn}) {
         var data = await fetch(url)
             .then(result => { return result.json()})
             .then(data => {
-                console.log("data", data)
                 setBook({"isbn": isbn, "title" : data.items[0].volumeInfo.title, "thumbnail": data.items[0].volumeInfo.imageLinks.thumbnail})
             })
             .catch(err => {
                 console.log("error fetching " + isbn, err)
-                setBook({"isbn": isbn, "title" : "unable to fetch title", "thumbnail": "unknown image"})
+                setBook({"isbn": isbn, "thumbnail": "unable to fetch image"})
         })
         return data;
     }
@@ -26,9 +25,8 @@ export default function Listings({isbn}) {
     return (
         <table>
             <tr>
-                <td>{book.title}</td>
                 <td>{book.isbn}</td>
-                <td><img src={book.thumbnail} alt={book.title} title={book.title}/></td>
+                <td><img src={book.thumbnail} alt={book.isbn} title={book.isbn}/></td>
             </tr>
         </table>
         )
