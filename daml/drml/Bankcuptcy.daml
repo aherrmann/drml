@@ -4,14 +4,15 @@
 daml 1.2
 module Bankruptcy where
 import Book
+import DA.List
 
 template BankruptcyAgreement
   with
-    reseller : Party
+    bankruptReseller : Party
     newReseller : Party
     affectedParties : [Party] -- Hardcoded for simplicity to save time in the demo.
   where
-    signatory reseller, newReseller
+    signatory bankruptReseller, newReseller
     observer affectedParties
 
     nonconsuming choice TransferVolumeLicense: ContractId BookVolumeLicense
@@ -20,7 +21,7 @@ template BankruptcyAgreement
         publisher: Party
       controller publisher
       do
-        (volumeLicenseId, volumeLicense) <- fetchByKey @BookVolumeLicense (reseller, isbn)
+        (volumeLicenseId, volumeLicense) <- fetchByKey @BookVolumeLicense (bankruptReseller, isbn)
         archive volumeLicenseId
         create volumeLicense with reseller = newReseller
 
@@ -30,7 +31,7 @@ template BankruptcyAgreement
         reader: Party
       controller reader
       do
-        (licenseId, license) <- fetchByKey @BookLicense (reseller, reader, isbn)
+        (licenseId, license) <- fetchByKey @BookLicense (bankruptReseller, reader, isbn)
         archive licenseId
         create license with reseller = newReseller
 
@@ -38,28 +39,37 @@ template instance BankruptcyDeclaration = Proposal BankruptcyAgreement
 
 bankrupt = scenario do
   -- Initialize ledger with scenario from Book module.
-  testBookDeal
+  (Parties{..}, books) <- setup
       
-  -- Constant definitions...
-  let isbn = "b3st-isbn"
-  publisher <- getParty "BestPublisher"
-  reseller <- getParty "BestReseller"
-  newReseller <- getParty "NewReseller"
-  consumerA <- getParty "Consumer:A"
-  consumerB <- getParty "Consumer:B"
+  let bankruptReseller = resellers!!0
+  let newReseller = resellers!!2
 
   -- Reseller declares bankcruptcy
-  let bankruptcyAgreement = BankruptcyAgreement with affectedParties = [publisher, consumerA, consumerB]; ..
-  bankruptcyDeclaration <- reseller `submit` create Proposal with proposer = reseller; receiver = newReseller; proposal = bankruptcyAgreement
+  let bankruptcyAgreement = BankruptcyAgreement with affectedParties = publishers ++ consumers; ..
+  bankruptcyDeclaration <- resellers!!0 `submit` create Proposal with proposer = bankruptReseller; receiver = newReseller; proposal = bankruptcyAgreement
 
   -- NewReseller agrees to take over
   bankruptcyAgreement <- newReseller `submit` exercise bankruptcyDeclaration Accept
 
-  -- Publisher transfers the volume license
-  publisher `submit` exercise bankruptcyAgreement TransferVolumeLicense with ..
+  -- For the demo...
+  -- Transfer a single volume license
+  publishers!!0 `submit` exercise bankruptcyAgreement TransferVolumeLicense with publisher = publishers!!0; isbn = (books!!0).isbn
+  -- Transfer a single individual license
+  consumers!!0 `submit` exercise bankruptcyAgreement TransferLicense with reader = consumers!!0; isbn = (books!!0).isbn
 
-  -- Readers transfer their individual licenses
-  consumerA `submit` exercise bankruptcyAgreement TransferLicense with reader = consumerA; ..
-  consumerB `submit` exercise bankruptcyAgreement TransferLicense with reader = consumerB; ..
+  -- For the sake of completeness...
+  -- Transfer remaining volume licenses
+  publishers!!0 `submit` exercise bankruptcyAgreement TransferVolumeLicense with publisher = publishers!!0; isbn = (books!!3).isbn
+  publishers!!1 `submit` exercise bankruptcyAgreement TransferVolumeLicense with publisher = publishers!!1; isbn = (books!!1).isbn
+  publishers!!1 `submit` exercise bankruptcyAgreement TransferVolumeLicense with publisher = publishers!!1; isbn = (books!!4).isbn
+  publishers!!2 `submit` exercise bankruptcyAgreement TransferVolumeLicense with publisher = publishers!!2; isbn = (books!!2).isbn
+  publishers!!2 `submit` exercise bankruptcyAgreement TransferVolumeLicense with publisher = publishers!!2; isbn = (books!!5).isbn
+
+  -- Transfer remaining individual licenses
+  consumers!!0 `submit` exercise bankruptcyAgreement TransferLicense with reader = consumers!!0; isbn = (books!!4).isbn
+  consumers!!1 `submit` exercise bankruptcyAgreement TransferLicense with reader = consumers!!1; isbn = (books!!2).isbn
+  consumers!!1 `submit` exercise bankruptcyAgreement TransferLicense with reader = consumers!!1; isbn = (books!!3).isbn
+  consumers!!2 `submit` exercise bankruptcyAgreement TransferLicense with reader = consumers!!2; isbn = (books!!1).isbn
+  consumers!!2 `submit` exercise bankruptcyAgreement TransferLicense with reader = consumers!!2; isbn = (books!!5).isbn
 
   return ()
