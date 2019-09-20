@@ -33,7 +33,7 @@ function Offers({ history }) {
   const acceptOffer = async c => {
     await splitIou(c.argument.cost.value, c.argument.cost.currency);
     const ious = getContracts(ledger, "Iou", "Iou");
-    const iou = ious.find(i => i.argument.amount.currency === c.argument.cost.currency && i.argument.amount.value === c.argument.cost.value);
+    const iou = ious.find(i => i.argument.owner === user.user && i.argument.amount.currency === c.argument.cost.currency && i.argument.amount.value === c.argument.cost.value);
     const command = {
       templateId: { moduleName: "Book", entityName: "BookVolumeLicenseCostlyProposal" },
       contractId: c.contractId,

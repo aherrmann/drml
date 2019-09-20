@@ -13,7 +13,7 @@ function BookPurchase({ reseller, isbn, history }) {
   const consumer = getContract(ledger, "Book", "Consumer");
 
   const buyBook = async () => {
-    const ious = getContracts(ledger, "Iou", "Iou");
+    const ious = getContracts(ledger, "Iou", "Iou").filter(i => i.argument.owner === user.user);
     const templateId = { moduleName: "Book", entityName: "Consumer" };
     const contractId = consumer.contractId;
     const choice = "BuyBook";
