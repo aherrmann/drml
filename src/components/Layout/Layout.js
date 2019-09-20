@@ -16,6 +16,7 @@ import NewOffer from "../../pages/offers/NewOffer";
 import Volumes from "../../pages/volumes/Volumes";
 import Licenses from "../../pages/licenses/Licenses";
 import Royalties from "../../pages/royalties/Royalties";
+import Listings from "../../pages/listings/Listings";
 
 function Layout(props) {
   const classes = useStyles();
@@ -31,22 +32,23 @@ function Layout(props) {
   ];
 
   if (isAuthor) {
-    structure.push({ key : "newproposal", label: "NewProposal", path: "/app/proposals/new",  component: NewProposal, icon: <></>, hideInSidebar: true });
-    structure.push({ key : "proposals",   label: "Proposals",   path: "/app/proposals",      component: Proposals,   icon: <NoteAdd /> });
-    structure.push({ key : "deals",       label: "Deals",       path: "/app/deals",          component: Deals,       icon: <CheckCircle /> });
-    structure.push({ key : "royalties",   label: "Royalties",   path: "/app/royalties",      component: Royalties,   icon: <AttachMoney /> });
+    structure.push({ key : "newproposal", label: "NewProposal",   path: "/app/proposals/new",  component: NewProposal, icon: <></>, hideInSidebar: true });
+    structure.push({ key : "proposals",   label: "Proposals",     path: "/app/proposals",      component: Proposals,   icon: <NoteAdd /> });
+    structure.push({ key : "deals",       label: "Deals",         path: "/app/deals",          component: Deals,       icon: <CheckCircle /> });
+    structure.push({ key : "royalties",   label: "Royalties",     path: "/app/royalties",      component: Royalties,   icon: <AttachMoney /> });
   } else if (isPublisher) {
-    structure.push({ key : "proposals",   label: "Proposals",   path: "/app/proposals",      component: Proposals,   icon: <NoteAdd /> });
-    structure.push({ key : "deals",       label: "Deals",       path: "/app/deals",          component: Deals,       icon: <CheckCircle /> });
-    structure.push({ key : "newoffer",    label: "NewOffer",    path: "/app/offers/new",     component: NewOffer,    icon: <></>, hideInSidebar: true });
-    structure.push({ key : "offers",      label: "Offers",      path: "/app/offers",         component: Offers,      icon: <Money /> });
-    structure.push({ key : "royalties",   label: "Royalties",   path: "/app/royalties",      component: Royalties,   icon: <AttachMoney /> });
+    structure.push({ key : "proposals",   label: "Proposals",     path: "/app/proposals",      component: Proposals,   icon: <NoteAdd /> });
+    structure.push({ key : "deals",       label: "Deals",         path: "/app/deals",          component: Deals,       icon: <CheckCircle /> });
+    structure.push({ key : "newoffer",    label: "NewOffer",      path: "/app/offers/new",     component: NewOffer,    icon: <></>, hideInSidebar: true });
+    structure.push({ key : "offers",      label: "Offers",        path: "/app/offers",         component: Offers,      icon: <Money /> });
+    structure.push({ key : "royalties",   label: "Royalties",     path: "/app/royalties",      component: Royalties,   icon: <AttachMoney /> });
   } else if (isReseller) {
-    structure.push({ key : "offers",      label: "Offers",      path: "/app/offers",         component: Offers,      icon: <Money /> });
-    structure.push({ key : "volumes",     label: "Volumes",     path: "/app/volumes",        component: Volumes,     icon: <DynamicFeed /> });
-    structure.push({ key : "licenses",    label: "Licenses",    path: "/app/licenses",       component: Licenses,    icon: <MenuBook /> });
+    structure.push({ key : "offers",      label: "Offers",        path: "/app/offers",         component: Offers,      icon: <Money /> });
+    structure.push({ key : "volumes",     label: "Volumes",       path: "/app/volumes",        component: Volumes,     icon: <DynamicFeed /> });
+    structure.push({ key : "licenses",    label: "Licenses",      path: "/app/licenses",       component: Licenses,    icon: <MenuBook /> });
   } else {
-    structure.push({ key : "licenses",    label: "Licenses",    path: "/app/licenses",       component: Licenses,    icon: <MenuBook /> });
+    structure.push({ key : "licenses",    label: "Licenses",      path: "/app/licenses",       component: Licenses,    icon: <MenuBook /> });
+    structure.push({ key : "listings",    label: "Book Listings", path: "/app/listings",       component: Listings,    icon: <MenuBook /> });
   }
 
   return (

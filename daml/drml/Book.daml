@@ -404,9 +404,9 @@ testBookDeal = scenario
     let book = Book
           with
             author = author
-            title = "The best book"
+            title = "Steve Jobs"
             content = "This is the best book"
-            isbn = "b3st-isbn"
+            isbn = "9781451648546"
     let bookDeal = BookDeal
           with
             author = author
