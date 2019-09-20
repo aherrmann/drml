@@ -381,10 +381,10 @@ setup = scenario do
 
 testBookDeal = scenario
   do
-    readerA <- getParty "Reader A"
-    readerAId <- readerA `submit` create Consumer with consumer = readerA
-    readerB <- getParty "Reader B"
-    readerBId <- readerB `submit` create Consumer with consumer = readerB
+    consumerA <- getParty "Consumer:A"
+    consumerAId <- consumerA `submit` create Consumer with consumer = consumerA
+    consumerB <- getParty "Consumer:B"
+    consumerBId <- consumerB `submit` create Consumer with consumer = consumerB
 
     author <- getParty "BestAuthor"
     authorId <- author `submit` create Author with ..
@@ -395,7 +395,7 @@ testBookDeal = scenario
     reseller <- getParty "BestReseller"
     resellerId <- reseller `submit` create Reseller with ..
 
-    bookListingId <- reseller `submit` exercise resellerId SubscribeConsumers with consumers = [readerA, readerB]
+    bookListingId <- reseller `submit` exercise resellerId SubscribeConsumers with consumers = [consumerA, consumerB]
 
     let chf1000 = Amount 1000.0 "CHF"
     bank <- getParty "BestBank"
@@ -433,14 +433,12 @@ testBookDeal = scenario
     (volumeLicenseId, royaltyPayment, iouForPublisher) <- reseller `submit` exercise bookVolumeProposal AcceptAndPay
       with
         iouId
-    readerA <- getParty "Reader:A"
-    readerB <- getParty "Reader:B"
     bookLicenseA <- reseller `submit` exerciseByKey @BookVolumeLicense (reseller, book.isbn) CreateLicense
       with
-        reader = readerA
+        reader = consumerA
     bookLicenseB <- reseller `submit` exerciseByKey @BookVolumeLicense (reseller, book.isbn) CreateLicense
       with
-        reader = readerB
+        reader = consumerB
 
     reseller `submit`
       do
