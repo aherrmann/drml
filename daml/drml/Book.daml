@@ -204,10 +204,9 @@ template BookVolumeLicense
     volume : Int
     book : Book
   where
-    signatory publisher
-    observer reseller
+    signatory publisher, reseller
     ensure volume > 0
-    key (publisher, reseller, book.isbn) : (Party, Party, ISBN)
+    key (reseller, book.isbn) : (Party, ISBN)
     maintainer key._1
 
     choice CreateLicense: ContractId BookLicense
@@ -405,10 +404,10 @@ testBookDeal = scenario
         iouId
     readerA <- getParty "Reader:A"
     readerB <- getParty "Reader:B"
-    bookLicenseA <- reseller `submit` exerciseByKey @BookVolumeLicense (publisher, reseller, book.isbn) CreateLicense
+    bookLicenseA <- reseller `submit` exerciseByKey @BookVolumeLicense (reseller, book.isbn) CreateLicense
       with
         reader = readerA
-    bookLicenseB <- reseller `submit` exerciseByKey @BookVolumeLicense (publisher, reseller, book.isbn) CreateLicense
+    bookLicenseB <- reseller `submit` exerciseByKey @BookVolumeLicense (reseller, book.isbn) CreateLicense
       with
         reader = readerB
 
