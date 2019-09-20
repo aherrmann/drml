@@ -246,13 +246,6 @@ template BookVolumeLicense
             return ()
         create BookLicense with ..
 
-    choice TransferBookVolumeLicense: ContractId BookVolumeLicense
-      with
-        newReseller : Party
-      controller reseller
-      do
-        create BookVolumeLicense with reseller = newReseller; ..
-
 template BookLicense
   with
     reseller: Party
@@ -282,6 +275,17 @@ template ReadingPermission
     signatory reseller
     observer reader
 
+data Parties = Parties {
+  authors : [Party],
+  authorIds : [ContractId Author],
+  publishers : [Party],
+  publisherIds : [ContractId Publisher],
+  resellers : [Party],
+  resellerIds : [ContractId Reseller],
+  consumers : [Party],
+  consumerIds : [ContractId Consumer]
+}
+
 setupBookDeal author authorId publisher book royalties = scenario do
   let bookDeal = BookDeal with ..
   bdpId <- submit author do exercise authorId ProposeBookDeal with ..
@@ -301,7 +305,7 @@ setupVolumeLicense issuer publisher publisherId reseller volume book price = sce
     return res
 
 setup = scenario do
-  -- Role contracts
+  -- Setup parties & role contracts
   authors <- mapA getParty [ "Author1", "Author2", "Author3" ]
   authorIds <- mapA (\a -> submit a do create Author with author = a) authors
   publishers <- mapA getParty [ "Publisher1", "Publisher2", "Publisher3" ]
@@ -310,6 +314,7 @@ setup = scenario do
   resellerIds <- mapA (\r -> submit r do create Reseller with reseller = r) resellers
   consumers <- mapA getParty [ "Consumer1", "Consumer2", "Consumer3" ]
   consumerIds <- mapA (\c -> submit c do create Consumer with consumer = c) consumers
+  let parties = Parties with ..
 
   -- Book listings
   bookListingIds <- mapA (\(r, rid) -> submit r do exercise rid SubscribeConsumers with consumers) (zip resellers resellerIds)
@@ -350,12 +355,6 @@ setup = scenario do
   (bvlId10, rpId10, _) <- setupVolumeLicense issuer (publishers!!1) (publisherIds!!1) (resellers!!1) 100 (books!!4) (Amount 1000.0 "CHF")
   (bvlId11, rpId11, _) <- setupVolumeLicense issuer (publishers!!2) (publisherIds!!2) (resellers!!1) 100 (books!!2) (Amount 1000.0 "CHF")
   (bvlId12, rpId12, _) <- setupVolumeLicense issuer (publishers!!2) (publisherIds!!2) (resellers!!1) 100 (books!!5) (Amount 1000.0 "CHF")
-  (bvlId13, rpId13, _) <- setupVolumeLicense issuer (publishers!!0) (publisherIds!!0) (resellers!!2) 100 (books!!0) (Amount 1000.0 "CHF")
-  (bvlId14, rpId14, _) <- setupVolumeLicense issuer (publishers!!0) (publisherIds!!0) (resellers!!2) 100 (books!!3) (Amount 1000.0 "CHF")
-  (bvlId15, rpId15, _) <- setupVolumeLicense issuer (publishers!!1) (publisherIds!!1) (resellers!!2) 100 (books!!1) (Amount 1000.0 "CHF")
-  (bvlId16, rpId16, _) <- setupVolumeLicense issuer (publishers!!1) (publisherIds!!1) (resellers!!2) 100 (books!!4) (Amount 1000.0 "CHF")
-  (bvlId17, rpId17, _) <- setupVolumeLicense issuer (publishers!!2) (publisherIds!!2) (resellers!!2) 100 (books!!2) (Amount 1000.0 "CHF")
-  (bvlId18, rpId18, _) <- setupVolumeLicense issuer (publishers!!2) (publisherIds!!2) (resellers!!2) 100 (books!!5) (Amount 1000.0 "CHF")
 
   -- Licenses
   blId1  <- submit (resellers!!0) do exercise bvlId1 CreateLicense with reader = consumers!!0
@@ -370,94 +369,34 @@ setup = scenario do
   blId10 <- submit (resellers!!1) do exercise bvlId10 CreateLicense with reader = consumers!!0
   blId11 <- submit (resellers!!1) do exercise bvlId11 CreateLicense with reader = consumers!!1
   blId12 <- submit (resellers!!1) do exercise bvlId12 CreateLicense with reader = consumers!!2
-  blId13 <- submit (resellers!!2) do exercise bvlId13 CreateLicense with reader = consumers!!0
-  blId14 <- submit (resellers!!2) do exercise bvlId14 CreateLicense with reader = consumers!!1
-  blId15 <- submit (resellers!!2) do exercise bvlId15 CreateLicense with reader = consumers!!2
-  blId16 <- submit (resellers!!2) do exercise bvlId16 CreateLicense with reader = consumers!!0
-  blId17 <- submit (resellers!!2) do exercise bvlId17 CreateLicense with reader = consumers!!1
-  blId18 <- submit (resellers!!2) do exercise bvlId18 CreateLicense with reader = consumers!!2
 
-  pure ()
-
+  pure (parties, books)
+  
 testBookDeal = scenario
   do
-    consumerA <- getParty "Consumer:A"
-    consumerAId <- consumerA `submit` create Consumer with consumer = consumerA
-    consumerB <- getParty "Consumer:B"
-    consumerBId <- consumerB `submit` create Consumer with consumer = consumerB
+    (parties, _books) <- setup
+    issuer <- getParty "Bank"
 
-    author <- getParty "BestAuthor"
-    authorId <- author `submit` create Author with ..
-
-    publisher <- getParty "BestPublisher"
-    publisherId <- publisher `submit` create Publisher with ..
-
-    reseller <- getParty "BestReseller"
-    resellerId <- reseller `submit` create Reseller with ..
-
-    bookListingId <- reseller `submit` exercise resellerId SubscribeConsumers with consumers = [consumerA, consumerB]
-
-    let chf1000 = Amount 1000.0 "CHF"
-    bank <- getParty "BestBank"
-    iouId <- bank `submit` create Iou
-              with
-                issuer = bank
-                owner = reseller
-                amount = chf1000
-                observers = []
-
-    let book = Book
-          with
-            author = author
-            title = "Steve Jobs"
-            content = "This is the best book"
-            isbn = "9781451648546"
-    let bookDeal = BookDeal
-          with
-            author = author
-            publisher = publisher
-            book = book
-            royalties = 0.10
-    bookDealProposalId <- author `submit` exercise authorId ProposeBookDeal with bookDeal
-    bookDealId <- publisher `submit` exercise bookDealProposalId Accept
-    bookDeal <- publisher `submit` fetch bookDealId
-    let bookVolumeLicense = BookVolumeLicense
-          with
-            volume = 100
-            book = bookDeal.book
-            ..
-    bookVolumeProposal <- publisher `submit` exercise publisherId OfferBookVolume
-      with
-        price = chf1000
-        volumeLicense = bookVolumeLicense
-
-    (volumeLicenseId, royaltyPayment, iouForPublisher) <- reseller `submit` exercise bookVolumeProposal AcceptAndPay
-      with
-        iouId
-    bookLicenseA <- reseller `submit` exerciseByKey @BookVolumeLicense (reseller, book.isbn) CreateLicense
-      with
-        issuer = bank
-        owner = consumerB
-        amount = Amount 10.0 "CHF"
-        observers = []
-    iouBId <- consumerB `submit` exercise iouBId Disclose with newObserver = reseller
-    purchaseBId <- consumerB `submit` exercise consumerBId BuyBook
-      with
-        reseller = reseller
-        book = book.isbn
-        payment = iouBId
-    bookLicenseB <- reseller `submit` exercise purchaseBId AcceptPurchase
-
-    reseller `submit`
-      do
-        volumeLicenseA <- fetch bookLicenseA
-        exerciseByKey @BookListing reseller EnlistBook
-          with
-            book = volumeLicenseA.book.isbn
-
-    readingPermissionA <- reseller `submit` exercise bookLicenseA GrantReadingPermission with duration = minutes 1
-    readingPermissionB <- reseller `submit` exercise bookLicenseB GrantReadingPermission with duration = minutes 1
-
-    (iouForAuthor, _) <- publisher `submit` exercise iouForPublisher Split with newAmount = 100.0
-    publisher `submit` exercise royaltyPayment PayOut with iouId = iouForAuthor
-    return ()
+    -- Test book purchase
+    do
+      let reseller :: _ = parties.resellers
+          resellerId :: _ = parties.resellerIds
+          consumer :: _ = parties.consumers
+          consumerId :: _ = parties.consumerIds
+      chf100Id <- issuer `submit` create Iou with issuer; owner = consumer; observers = []; amount = Amount 100.0 "CHF"
+      purchases <- consumer `submit`
+        do
+          -- Look up book
+          (_, listing) <- fetchByKey @BookListing reseller
+          let bookA :: bookB :: _ = listing.books
+          -- Prepare change
+          (chf10AId, chf90Id) <- exercise chf100Id Split with newAmount = 10.0
+          (chf10BId, chf80Id) <- exercise chf90Id Split with newAmount = 10.0
+          chf10AId <- exercise chf10AId Disclose with newObserver = reseller
+          chf10BId <- exercise chf10BId Disclose with newObserver = reseller
+          -- Request purchase
+          purchaseA <- exercise consumerId BuyBook with book = bookA; payment = chf10AId; ..
+          purchaseB <- exercise consumerId BuyBook with book = bookB; payment = chf10BId; ..
+          return [purchaseA, purchaseB]
+      mapA (\purchase -> reseller `submit` exercise purchase AcceptPurchase) purchases
+      return ()
