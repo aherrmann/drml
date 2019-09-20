@@ -17,6 +17,7 @@ import Volumes from "../../pages/volumes/Volumes";
 import Licenses from "../../pages/licenses/Licenses";
 import Royalties from "../../pages/royalties/Royalties";
 import Listings from "../../pages/listings/Listings";
+import Purchases from "../../pages/purchases/Purchases";
 
 function Layout(props) {
   const classes = useStyles();
@@ -46,6 +47,7 @@ function Layout(props) {
     structure.push({ key : "offers",      label: "Offers",        path: "/app/offers",         component: Offers,      icon: <Money /> });
     structure.push({ key : "volumes",     label: "Volumes",       path: "/app/volumes",        component: Volumes,     icon: <DynamicFeed /> });
     structure.push({ key : "licenses",    label: "Licenses",      path: "/app/licenses",       component: Licenses,    icon: <MenuBook /> });
+    structure.push({ key : "purchases",   label: "Purchases",     path: "/app/purchases",      component: Purchases,   icon: <AttachMoney /> });
   } else {
     structure.push({ key : "licenses",    label: "Licenses",      path: "/app/licenses",       component: Licenses,    icon: <MenuBook /> });
     structure.push({ key : "listings",    label: "Book Listings", path: "/app/listings",       component: Listings,    icon: <MenuBook /> });

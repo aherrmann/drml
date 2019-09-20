@@ -9,7 +9,6 @@ export default function Listings({isbn}) {
         var data = await fetch(url)
             .then(result => { return result.json()})
             .then(data => {
-                console.log("data", data)
                 setBook({"isbn": isbn, "title" : data.items[0].volumeInfo.title, "thumbnail": data.items[0].volumeInfo.imageLinks.thumbnail})
             })
             .catch(err => {

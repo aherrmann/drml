@@ -3,12 +3,18 @@ name: drml
 source: drml
 scenario: Book:setup
 parties:
-  - BestAuthor
-  - BestPublisher
-  - BestReseller
-  - NewReseller
-  - Reader:A
-  - Reader:B
+  - Author1
+  - Author2
+  - Author3
+  - Publisher1
+  - Publisher2
+  - Publisher3
+  - Reseller1
+  - Reseller2
+  - Reseller3
+  - Consumer1
+  - Consumer2
+  - Consumer3
 version: 0.0.1
 dependencies:
   - daml-prim
