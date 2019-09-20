@@ -376,7 +376,7 @@ setup = scenario do
 
   pure (parties, books)
 
-inDemoPurchaseBook reseller consumer = scenario
+inDemoPurchaseBook reseller consumer duration = scenario
   do
     (resellerId, _) <- reseller `submit` fetchByKey @Reseller reseller
     (consumerId, _) <- consumer `submit` fetchByKey @Consumer consumer
@@ -388,7 +388,7 @@ inDemoPurchaseBook reseller consumer = scenario
         let book = listing.books!!0
         payment <- exercise chf10Id Disclose with newObserver = reseller
         exercise consumerId BuyBook with ..
-    reseller `submit` exercise purchase AcceptPurchase with duration = seconds 10
+    reseller `submit` exercise purchase AcceptPurchase with ..
 
 demoBeforeBankrupt = scenario
   do
@@ -396,7 +396,7 @@ demoBeforeBankrupt = scenario
     issuer <- getParty "Bank"
 
     -- Do this during demo
-    -- inDemoPurchaseBook (resellers!!0) (consumers!!0)
+    -- inDemoPurchaseBook (resellers!!0) (consumers!!0) (seconds 10)
 
     return (parties, books)
   

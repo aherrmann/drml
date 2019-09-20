@@ -43,7 +43,7 @@ demoAfterBankrupt = scenario do
   (Parties{..}, books) <- demoBeforeBankrupt
 
   -- Done in demo before bankrupt
-  inDemoPurchaseBook (resellers!!0) (consumers!!0)
+  inDemoPurchaseBook (resellers!!0) (consumers!!0) (seconds 0)
       
   let bankruptReseller = resellers!!0
   let newReseller = resellers!!2
