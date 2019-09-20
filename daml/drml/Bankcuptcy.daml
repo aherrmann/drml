@@ -5,23 +5,61 @@ daml 1.2
 module Bankruptcy where
 import Book
 
-template Bankrupt
+template BankruptcyAgreement
   with
     reseller : Party
     newReseller : Party
+    affectedParties : [Party] -- Hardcoded for simplicity to save time in the demo.
   where
-    signatory reseller
-    observer newReseller
+    signatory reseller, newReseller
+    observer affectedParties
 
-    nonconsuming choice TakeOverVolumeLicense: ContractId BookVolumeLicense
-      with 
-        bookVolumeLicense : ContractId BookVolumeLicense
-      controller newReseller
+    nonconsuming choice TransferVolumeLicense: ContractId BookVolumeLicense
+      with
+        isbn: ISBN
+        publisher: Party
+      controller publisher
       do
-        exercise bookVolumeLicense TransferBookVolumeLicense with newReseller = newReseller
+        (volumeLicenseId, volumeLicense) <- fetchByKey @BookVolumeLicense (publisher, reseller, isbn)
+        archive volumeLicenseId
+        create volumeLicense with reseller = newReseller
+
+    nonconsuming choice TransferLicense: ContractId BookLicense
+      with 
+        isbn: ISBN
+        reader: Party
+      controller reader
+      do
+        (licenseId, license) <- fetchByKey @BookLicense (reseller, reader, isbn)
+        archive licenseId
+        create license with reseller = newReseller
+
+template instance BankruptcyDeclaration = Proposal BankruptcyAgreement
 
 bankrupt = scenario do
+  -- Initialize ledger with scenario from Book module.
   testBookDeal
-  p <- getParty "party"
-  pure ()
-    -- TODO: to be continued
+      
+  -- Constant definitions...
+  let isbn = "b3st-isbn"
+  publisher <- getParty "BestPublisher"
+  reseller <- getParty "BestReseller"
+  newReseller <- getParty "NewReseller"
+  readerA <- getParty "Reader:A"
+  readerB <- getParty "Reader:B"
+
+  -- Reseller declares bankcruptcy
+  let bankruptcyAgreement = BankruptcyAgreement with affectedParties = [publisher, readerA, readerB]; ..
+  bankruptcyDeclaration <- reseller `submit` create Proposal with proposer = reseller; receiver = newReseller; proposal = bankruptcyAgreement
+
+  -- NewReseller agrees to take over
+  bankruptcyAgreement <- newReseller `submit` exercise bankruptcyDeclaration Accept
+
+  -- Publisher transfers the volume license
+  publisher `submit` exercise bankruptcyAgreement TransferVolumeLicense with ..
+
+  -- Readers transfer their individual licenses
+  readerA `submit` exercise bankruptcyAgreement TransferLicense with reader = readerA; ..
+  readerB `submit` exercise bankruptcyAgreement TransferLicense with reader = readerB; ..
+
+  return ()
