@@ -293,7 +293,12 @@ setupVolumeLicense issuer publisher publisherId reseller volume book price = sce
     iou = Iou with owner = reseller; observers = []; amount = price; ..
   iouId <- submit issuer do create iou
   bvlpId <- submit publisher do exercise publisherId OfferBookVolume with ..
-  submit reseller do exercise bvlpId AcceptAndPay with ..
+  submit reseller do
+    res <- exercise bvlpId AcceptAndPay with ..
+    exerciseByKey @BookListing reseller EnlistBook
+          with
+            book = volumeLicense.book.isbn
+    return res
 
 setup = scenario do
   -- Role contracts
@@ -319,12 +324,12 @@ setup = scenario do
   -- Book deals
   let
     books = [
-      (Book with author = authors!!0; isbn = "ISBN 1"; title = "Title 1"; content = "Content 1"),
-      (Book with author = authors!!0; isbn = "ISBN 2"; title = "Title 2"; content = "Content 2"),
-      (Book with author = authors!!1; isbn = "ISBN 3"; title = "Title 3"; content = "Content 3"),
-      (Book with author = authors!!1; isbn = "ISBN 4"; title = "Title 4"; content = "Content 4"),
-      (Book with author = authors!!2; isbn = "ISBN 5"; title = "Title 5"; content = "Content 5"),
-      (Book with author = authors!!2; isbn = "ISBN 6"; title = "Title 6"; content = "Content 6") ]
+      (Book with author = authors!!0; isbn = "0552124753"; title = "Title 1"; content = "Content 1"),
+      (Book with author = authors!!0; isbn = "0552128481"; title = "Title 2"; content = "Content 2"),
+      (Book with author = authors!!1; isbn = "0552140287"; title = "Title 3"; content = "Content 3"),
+      (Book with author = authors!!1; isbn = "0552131067"; title = "Title 4"; content = "Content 4"),
+      (Book with author = authors!!2; isbn = "0552131075"; title = "Title 5"; content = "Content 5"),
+      (Book with author = authors!!2; isbn = "0552134627"; title = "Title 6"; content = "Content 6") ]
   bdId1 <- setupBookDeal (authors!!0) (authorIds!!0) (publishers!!0) (books!!0) 0.01
   bdId2 <- setupBookDeal (authors!!0) (authorIds!!0) (publishers!!1) (books!!1) 0.02
   bdId3 <- setupBookDeal (authors!!1) (authorIds!!1) (publishers!!2) (books!!2) 0.03

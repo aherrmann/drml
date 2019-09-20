@@ -13,7 +13,8 @@ export default function Listings({isbn}) {
                 setBook({"isbn": isbn, "title" : data.items[0].volumeInfo.title, "thumbnail": data.items[0].volumeInfo.imageLinks.thumbnail})
             })
             .catch(err => {
-                setBook({"isbn": "error", "title" : "error", "thumbnail": "error"})
+                console.log("error fetching " + isbn, err)
+                setBook({"isbn": isbn, "title" : "unable to fetch title", "thumbnail": "unknown image"})
         })
         return data;
     }
@@ -22,8 +23,13 @@ export default function Listings({isbn}) {
         fetchBookData()
     }, []);
 
-    return (<div>
-        <img src={book.thumbnail} alt={book.title} title={book.title}/>
-        {book.title}
-        </div>)
+    return (
+        <table>
+            <tr>
+                <td>{book.title}</td>
+                <td>{book.isbn}</td>
+                <td><img src={book.thumbnail} alt={book.title} title={book.title}/></td>
+            </tr>
+        </table>
+        )
 }
