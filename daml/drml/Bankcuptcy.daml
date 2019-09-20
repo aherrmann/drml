@@ -36,21 +36,6 @@ template BankruptcyAgreement
 
 template instance BankruptcyDeclaration = Proposal BankruptcyAgreement
 
-template DiscloseBookLicense
-  with
-    reader: Party
-    newReseller: Party
-    license: ContractId BookLicense
-  where
-    signatory reader
-    observer newReseller
-
-    choice Disclose: ()
-      controller reader
-      do
-        fetch license
-        return ()
-
 bankrupt = scenario do
   -- Initialize ledger with scenario from Book module.
   testBookDeal
