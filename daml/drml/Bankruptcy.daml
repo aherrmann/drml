@@ -43,7 +43,7 @@ demoAfterBankrupt = scenario do
   (Parties{..}, books) <- demoBeforeBankrupt
 
   -- Done in demo before bankrupt
-  inDemoPurchaseBook (resellers!!0) (consumers!!0) (seconds 0)
+  inDemoPurchaseBook (resellers!!0) (consumers!!0) (seconds 0) True
       
   let bankruptReseller = resellers!!0
   let newReseller = resellers!!2
@@ -61,7 +61,7 @@ demoAfterBankrupt = scenario do
   -- Transfer a single individual license
   newLicense <- consumers!!0 `submit` exercise bankruptcyAgreement TransferLicense with reader = consumers!!0; isbn = (books!!0).isbn
   -- Grant a new reading permission
-  newReseller `submit` exercise newLicense GrantReadingPermission with duration = days 14
+  newReseller `submit` exercise newLicense GrantReadingPermission with duration = days 35600; expired = False
 
   -- For the sake of completeness...
   -- Transfer remaining volume licenses

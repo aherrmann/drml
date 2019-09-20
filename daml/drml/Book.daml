@@ -99,6 +99,7 @@ template BookPurchase
     choice AcceptPurchase : ContractId BookLicense
       with
         duration : RelTime
+        expired : Bool
       controller reseller
       do
         exercise payment Transfer with newOwner = reseller
@@ -264,6 +265,7 @@ template BookLicense
     nonconsuming choice GrantReadingPermission: ContractId ReadingPermission
       with
         duration : RelTime
+        expired : Bool
       controller reseller
       do
         now <- getTime
@@ -275,6 +277,8 @@ template ReadingPermission
     reader : Party
     book : Book
     expiration : Time
+    -- XXX: For demo purposes only
+    expired : Bool
   where
     signatory reseller
     observer reader
@@ -376,7 +380,7 @@ setup = scenario do
 
   pure (parties, books)
 
-inDemoPurchaseBook reseller consumer duration = scenario
+inDemoPurchaseBook reseller consumer duration expired = scenario
   do
     (resellerId, _) <- reseller `submit` fetchByKey @Reseller reseller
     (consumerId, _) <- consumer `submit` fetchByKey @Consumer consumer
@@ -396,7 +400,7 @@ demoBeforeBankrupt = scenario
     issuer <- getParty "Bank"
 
     -- Do this during demo
-    -- inDemoPurchaseBook (resellers!!0) (consumers!!0) (seconds 10)
+    -- inDemoPurchaseBook (resellers!!0) (consumers!!0) (seconds 10) False
 
     return (parties, books)
   
@@ -426,5 +430,5 @@ testBookDeal = scenario
           purchaseA <- exercise consumerId BuyBook with book = bookA; payment = chf10AId; ..
           purchaseB <- exercise consumerId BuyBook with book = bookB; payment = chf10BId; ..
           return [purchaseA, purchaseB]
-      mapA (\purchase -> reseller `submit` exercise purchase AcceptPurchase with duration = days 14) purchases
+      mapA (\purchase -> reseller `submit` exercise purchase AcceptPurchase with duration = days 14; expired = False) purchases
       return ()
