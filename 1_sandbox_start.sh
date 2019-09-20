@@ -13,4 +13,4 @@ cd daml
 daml build
 
 # Launch the sandbox
-daml sandbox --ledgerid DRML --scenario Book:testBookDeal .daml/dist/drml-0.0.1.dar
+daml sandbox --ledgerid DRML --scenario Book:setup .daml/dist/drml-0.0.1.dar

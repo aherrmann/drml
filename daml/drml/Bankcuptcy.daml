@@ -20,7 +20,7 @@ template BankruptcyAgreement
         publisher: Party
       controller publisher
       do
-        (volumeLicenseId, volumeLicense) <- fetchByKey @BookVolumeLicense (publisher, reseller, isbn)
+        (volumeLicenseId, volumeLicense) <- fetchByKey @BookVolumeLicense (reseller, isbn)
         archive volumeLicenseId
         create volumeLicense with reseller = newReseller
 
@@ -45,11 +45,11 @@ bankrupt = scenario do
   publisher <- getParty "BestPublisher"
   reseller <- getParty "BestReseller"
   newReseller <- getParty "NewReseller"
-  readerA <- getParty "Reader:A"
-  readerB <- getParty "Reader:B"
+  consumerA <- getParty "Consumer:A"
+  consumerB <- getParty "Consumer:B"
 
   -- Reseller declares bankcruptcy
-  let bankruptcyAgreement = BankruptcyAgreement with affectedParties = [publisher, readerA, readerB]; ..
+  let bankruptcyAgreement = BankruptcyAgreement with affectedParties = [publisher, consumerA, consumerB]; ..
   bankruptcyDeclaration <- reseller `submit` create Proposal with proposer = reseller; receiver = newReseller; proposal = bankruptcyAgreement
 
   -- NewReseller agrees to take over
@@ -59,7 +59,7 @@ bankrupt = scenario do
   publisher `submit` exercise bankruptcyAgreement TransferVolumeLicense with ..
 
   -- Readers transfer their individual licenses
-  readerA `submit` exercise bankruptcyAgreement TransferLicense with reader = readerA; ..
-  readerB `submit` exercise bankruptcyAgreement TransferLicense with reader = readerB; ..
+  consumerA `submit` exercise bankruptcyAgreement TransferLicense with reader = consumerA; ..
+  consumerB `submit` exercise bankruptcyAgreement TransferLicense with reader = consumerB; ..
 
   return ()

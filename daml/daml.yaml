@@ -1,7 +1,7 @@
 sdk-version: 0.13.25
 name: drml
 source: drml
-scenario: Book:testBookDeal
+scenario: Book:setup
 parties:
   - BestAuthor
   - BestPublisher
