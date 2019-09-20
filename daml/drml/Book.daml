@@ -246,13 +246,6 @@ template BookVolumeLicense
             return ()
         create BookLicense with ..
 
-    choice TransferBookVolumeLicense: ContractId BookVolumeLicense
-      with
-        newReseller : Party
-      controller reseller
-      do
-        create BookVolumeLicense with reseller = newReseller; ..
-
 template BookLicense
   with
     reseller: Party
