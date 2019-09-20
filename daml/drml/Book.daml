@@ -294,7 +294,7 @@ setupVolumeLicense issuer publisher publisherId reseller volume book price = sce
   iouId <- submit issuer do create iou
   bvlpId <- submit publisher do exercise publisherId OfferBookVolume with ..
   submit reseller do exercise bvlpId AcceptAndPay with ..
- 
+
 setup = scenario do
   -- Role contracts
   authors <- mapA getParty [ "Author1", "Author2", "Author3" ]
@@ -317,7 +317,7 @@ setup = scenario do
   consumerIouIds  <- mapA (\p -> submit issuer do create Iou with issuer; owner = p; observers = []; amount = Amount 100.0 "CHF") consumers
 
   -- Book deals
-  let 
+  let
     books = [
       (Book with author = authors!!0; isbn = "ISBN 1"; title = "Title 1"; content = "Content 1"),
       (Book with author = authors!!0; isbn = "ISBN 2"; title = "Title 2"; content = "Content 2"),
@@ -429,22 +429,7 @@ testBookDeal = scenario
     (volumeLicenseId, royaltyPayment, iouForPublisher) <- reseller `submit` exercise bookVolumeProposal AcceptAndPay
       with
         iouId
-
-    iouAId <- bank `submit` create Iou
-      with
-        issuer = bank
-        owner = consumerA
-        amount = Amount 10.0 "CHF"
-        observers = []
-    iouAId <- consumerA `submit` exercise iouAId Disclose with newObserver = reseller
-    purchaseAId <- consumerA `submit` exercise consumerAId BuyBook
-      with
-        reseller = reseller
-        book = book.isbn
-        payment = iouAId
-    bookLicenseA <- reseller `submit` exercise purchaseAId AcceptPurchase
-
-    iouBId <- bank `submit` create Iou
+    bookLicenseA <- reseller `submit` exerciseByKey @BookVolumeLicense (reseller, book.isbn) CreateLicense
       with
         issuer = bank
         owner = consumerB
