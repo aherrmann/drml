@@ -77,18 +77,14 @@ template Consumer
     key consumer : Party
     maintainer key
 
-    nonconsuming choice BuyBook : ContractId (Proposal BookPurchase)
+    nonconsuming choice BuyBook : ContractId BookPurchase
       with
         reseller : Party
         book : ISBN
         payment : ContractId Iou
       controller consumer
       do
-        create Proposal
-          with
-            proposer = consumer
-            receiver = reseller
-            proposal = BookPurchase with ..
+        create BookPurchase with ..
 
 template BookPurchase
   with
@@ -97,7 +93,8 @@ template BookPurchase
     book : ISBN
     payment : ContractId Iou
   where
-    signatory consumer, reseller
+    signatory consumer
+    observer reseller
 
     choice AcceptPurchase : ContractId BookLicense
       controller reseller
@@ -105,8 +102,6 @@ template BookPurchase
         exercise payment Transfer with newOwner = reseller
         (volumeId, _) <- fetchByKey @BookVolumeLicense (reseller, book)
         exercise volumeId CreateLicense with reader = consumer
-
-template instance BookPurchaseProposal = Proposal BookPurchase
 
 template BookListing
   with
@@ -442,12 +437,11 @@ testBookDeal = scenario
         amount = Amount 10.0 "CHF"
         observers = []
     iouAId <- consumerA `submit` exercise iouAId Disclose with newObserver = reseller
-    purchaseAProposalId <- consumerA `submit` exercise consumerAId BuyBook
+    purchaseAId <- consumerA `submit` exercise consumerAId BuyBook
       with
         reseller = reseller
         book = book.isbn
         payment = iouAId
-    purchaseAId <- reseller `submit` exercise purchaseAProposalId Accept
     bookLicenseA <- reseller `submit` exercise purchaseAId AcceptPurchase
 
     iouBId <- bank `submit` create Iou
@@ -457,12 +451,11 @@ testBookDeal = scenario
         amount = Amount 10.0 "CHF"
         observers = []
     iouBId <- consumerB `submit` exercise iouBId Disclose with newObserver = reseller
-    purchaseBProposalId <- consumerB `submit` exercise consumerBId BuyBook
+    purchaseBId <- consumerB `submit` exercise consumerBId BuyBook
       with
         reseller = reseller
         book = book.isbn
         payment = iouBId
-    purchaseBId <- reseller `submit` exercise purchaseBProposalId Accept
     bookLicenseB <- reseller `submit` exercise purchaseBId AcceptPurchase
 
     reseller `submit`
