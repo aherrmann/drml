@@ -77,6 +77,37 @@ template Consumer
     key consumer : Party
     maintainer key
 
+    nonconsuming choice BuyBook : ContractId (Proposal BookPurchase)
+      with
+        reseller : Party
+        book : ISBN
+        payment : ContractId Iou
+      controller consumer
+      do
+        create Proposal
+          with
+            proposer = consumer
+            receiver = reseller
+            proposal = BookPurchase with ..
+
+template BookPurchase
+  with
+    consumer : Party
+    reseller : Party
+    book : ISBN
+    payment : ContractId Iou
+  where
+    signatory consumer, reseller
+
+    choice AcceptPurchase : ContractId BookLicense
+      controller reseller
+      do
+        exercise payment Transfer with newOwner = reseller
+        (volumeId, _) <- fetchByKey @BookVolumeLicense (reseller, book)
+        exercise volumeId CreateLicense with reader = consumer
+
+template instance BookPurchaseProposal = Proposal BookPurchase
+
 template BookListing
   with
     reseller : Party
