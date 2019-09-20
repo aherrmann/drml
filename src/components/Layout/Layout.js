@@ -20,6 +20,7 @@ import NewBankruptcy from "../../pages/bankruptcy/NewBankruptcy";
 import Bankruptcy from "../../pages/bankruptcy/Bankruptcy";
 import Listings from "../../pages/listings/Listings";
 import Purchases from "../../pages/purchases/Purchases";
+import BooksToRead from "../../pages/listings/BooksToRead";
 
 function Layout(props) {
   const classes = useStyles();
@@ -57,6 +58,7 @@ function Layout(props) {
   } else {
     structure.push({ key : "licenses",      label: "Licenses",    path: "/app/licenses",       component: Licenses,      icon: <MenuBook /> });
     structure.push({ key : "listings",      label: "Book Listings", path: "/app/listings",       component: Listings,    icon: <MenuBook /> });
+    structure.push({ key : "toRead",      label: "Books To Read", path: "/app/bookstoread",       component: BooksToRead,    icon: <MenuBook /> });
     if (hasBankruptcy) structure.push({ key : "bankruptcy",    label: "Bankruptcy",  path: "/app/bankruptcy",     component: Bankruptcy,    icon: <TrendingDown /> });
   }
 
