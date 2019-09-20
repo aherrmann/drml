@@ -2,32 +2,25 @@
 
 ## Quick Start
 
-#### 1. Get the latest version
-
-You can start by cloning the latest version of React Dashboard on your
-local machine by running:
-
-```shell
-$ git clone https://github.com/georg-da/create-daml-app.git MyApp
-$ cd MyApp
-```
-
-#### 2. Run `yarn install`
+#### 1. Run `install.sh`
 
 This will install both run-time project dependencies and developer tools listed
 in [package.json](package.json) file.
 
-#### 3. Start the sandbox and JSON API
+You need to do this only the first time you run the application.
+
+#### 2. Start the sandbox
 
 ```
-daml build && daml sandbox --ledgerid DRML --scenario Book:testBookDeal .daml/dist/drml-0.0.1.dar
-```
-and
-```
-daml json-api --ledger-host localhost --ledger-port 6865 --http-port 7575
+1_sandbox_start.sh
 ```
 
-#### 4. Run `yarn start`
+#### 3. Start the JSON API
+```
+2_json_start.sh
+```
+
+#### 4. Start yarn by running `3_yarn_start.sh`
 
 Runs the app in the development mode.
 
