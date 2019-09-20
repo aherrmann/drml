@@ -1,7 +1,6 @@
-import React, { useState } from "react";
+import React from "react";
 import { Button } from "@material-ui/core";
 import { withRouter } from "react-router-dom";
-import useStyles from "../proposals/styles";
 import { useUserState } from "../../context/UserContext";
 import { useLedgerState, getContract, getContracts, useLedgerDispatch, sendCommand, fetchContracts } from "../../context/LedgerContext";
 

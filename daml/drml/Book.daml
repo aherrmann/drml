@@ -294,9 +294,12 @@ data Parties = Parties {
   consumerIds : [ContractId Consumer]
 }
 
-setupBookDeal author authorId publisher book royalties = scenario do
+proposeBookDeal author authorId publisher book royalties = scenario do
   let bookDeal = BookDeal with ..
-  bdpId <- submit author do exercise authorId ProposeBookDeal with ..
+  submit author do exercise authorId ProposeBookDeal with ..
+
+setupBookDeal author authorId publisher book royalties = scenario do
+  bdpId <- proposeBookDeal author authorId publisher book royalties
   submit publisher do exercise bdpId Accept
 
 setupVolumeLicense issuer allParties publisher publisherId reseller volume book price = scenario do
@@ -380,6 +383,15 @@ setup = scenario do
   blId11 <- submit (resellers!!1) do exercise bvlId11 CreateLicense with reader = consumers!!1
   blId12 <- submit (resellers!!1) do exercise bvlId12 CreateLicense with reader = consumers!!2
 
+  -- Fallback - ready reading permission of fifth book
+  do
+    let reseller = resellers!!0
+    let consumer = consumers!!0
+    (resellerId, _) <- reseller `submit` fetchByKey @Reseller reseller
+    (consumerId, _) <- consumer `submit` fetchByKey @Consumer consumer
+    (_, listing) <- consumer `submit` fetchByKey @BookListing reseller
+    reseller `submit` exercise blId4 GrantReadingPermission with duration = seconds 10; expired = True
+
   pure (parties, books)
 
 inDemoPurchaseBook iou10 reseller consumer duration expired = scenario
@@ -405,6 +417,21 @@ demoBeforeBankrupt = scenario
 
     -- Do this during demo
     -- inDemoPurchaseBook (resellers!!0) (consumers!!0) (seconds 10) False
+
+    -- Fallback - consumer request purchase of second book
+    do
+      let reseller = resellers!!0
+      let consumer = consumers!!0
+      iou10 <- issuer `submit` create Iou with issuer; owner = consumers!!0; observers = allParties; amount = Amount 10.0 "CHF"
+      (resellerId, _) <- reseller `submit` fetchByKey @Reseller reseller
+      (consumerId, _) <- consumer `submit` fetchByKey @Consumer consumer
+      issuer <- getParty "Bank"
+      consumer `submit`
+        do
+          (_, listing) <- fetchByKey @BookListing reseller
+          let book = listing.books!!1
+          payment <- exercise iou10 Disclose with newObserver = reseller
+          exercise consumerId BuyBook with ..
 
     return (parties, books, iou10)
   
