@@ -5,6 +5,7 @@ daml 1.2
 module Bankruptcy where
 import Book
 import DA.List
+import DA.Time
 
 template BankruptcyAgreement
   with
@@ -39,7 +40,10 @@ template instance BankruptcyDeclaration = Proposal BankruptcyAgreement
 
 demoAfterBankrupt = scenario do
   -- Initialize ledger with scenario from Book module.
-  (Parties{..}, books) <- setup
+  (Parties{..}, books) <- demoBeforeBankrupt
+
+  -- Done in demo before bankrupt
+  inDemoPurchaseBook (resellers!!0) (consumers!!0)
       
   let bankruptReseller = resellers!!0
   let newReseller = resellers!!2
@@ -55,7 +59,9 @@ demoAfterBankrupt = scenario do
   -- Transfer a single volume license
   publishers!!0 `submit` exercise bankruptcyAgreement TransferVolumeLicense with publisher = publishers!!0; isbn = (books!!0).isbn
   -- Transfer a single individual license
-  consumers!!0 `submit` exercise bankruptcyAgreement TransferLicense with reader = consumers!!0; isbn = (books!!0).isbn
+  newLicense <- consumers!!0 `submit` exercise bankruptcyAgreement TransferLicense with reader = consumers!!0; isbn = (books!!0).isbn
+  -- Grant a new reading permission
+  newReseller `submit` exercise newLicense GrantReadingPermission with duration = days 14
 
   -- For the sake of completeness...
   -- Transfer remaining volume licenses
