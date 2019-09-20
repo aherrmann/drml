@@ -27,7 +27,7 @@ function NewProposal({ history }) {
       bookDeal: {
         author: author.argument.author,
         publisher: state.publisher,
-        royalties: state.royalties,
+        royalties: state.royalties / 100.0,
         book: {
           isbn: state.isbn,
           title: state.title,
