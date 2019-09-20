@@ -19,7 +19,7 @@ function BooksToRead() {
                 setTimeout(function() {
                     state = { ...book, [isbn]: "!!! READING PERMISSION EXPIRED !!!"}
                     setBook(state)
-                }, 2000);
+                }, 5000);
             }
             setBook(state)
         }
