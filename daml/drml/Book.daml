@@ -97,11 +97,15 @@ template BookPurchase
     observer reseller
 
     choice AcceptPurchase : ContractId BookLicense
+      with
+        duration : RelTime
       controller reseller
       do
         exercise payment Transfer with newOwner = reseller
         (volumeId, _) <- fetchByKey @BookVolumeLicense (reseller, book)
-        exercise volumeId CreateLicense with reader = consumer
+        license <- exercise volumeId CreateLicense with reader = consumer
+        exercise license GrantReadingPermission with ..
+        return license
 
 template BookListing
   with
@@ -390,7 +394,7 @@ demoBeforeBankrupt = scenario
         (payment, chf90Id) <- exercise chf100Id Split with newAmount = 10.0
         payment <- exercise payment Disclose with newObserver = reseller
         exercise consumerId BuyBook with ..
-    reseller `submit` exercise purchase AcceptPurchase
+    reseller `submit` exercise purchase AcceptPurchase with duration = seconds 10
 
     return (parties, books)
   
@@ -420,5 +424,5 @@ testBookDeal = scenario
           purchaseA <- exercise consumerId BuyBook with book = bookA; payment = chf10AId; ..
           purchaseB <- exercise consumerId BuyBook with book = bookB; payment = chf10BId; ..
           return [purchaseA, purchaseB]
-      mapA (\purchase -> reseller `submit` exercise purchase AcceptPurchase) purchases
+      mapA (\purchase -> reseller `submit` exercise purchase AcceptPurchase with duration = days 14) purchases
       return ()
