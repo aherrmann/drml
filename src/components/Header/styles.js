@@ -161,4 +161,8 @@ export default makeStyles(theme => ({
     color: "rgba(255, 255, 255, 0.35)",
     // margin: theme.spacing(2),
   },
+  chip: {
+    margin: theme.spacing(1),
+    background: theme.palette.primary.light
+  },
 }));
