@@ -3,9 +3,30 @@
 
 daml 1.2
 module Bankruptcy where
+
 import Book
 import DA.List
 import DA.Time
+
+template Template t => Proposal2 t
+  with
+    proposer: Party
+    receiver: Party
+    proposal: t
+  where
+    signatory proposer
+    observer receiver
+
+    choice Accept2: ContractId t
+      controller receiver
+      do
+        create proposal
+
+    choice Reject2: ()
+      controller receiver
+      do
+        pure ()
+
 
 template BankruptcyAgreement
   with
@@ -36,7 +57,7 @@ template BankruptcyAgreement
         archive licenseId
         create license with reseller = newReseller
 
-template instance BankruptcyDeclaration = Proposal BankruptcyAgreement
+template instance BankruptcyDeclaration = Proposal2 BankruptcyAgreement
 
 demoAfterBankrupt = scenario do
   -- Initialize ledger with scenario from Book module.
@@ -50,10 +71,10 @@ demoAfterBankrupt = scenario do
 
   -- Reseller declares bankcruptcy
   let bankruptcyAgreement = BankruptcyAgreement with affectedParties = publishers ++ consumers; ..
-  bankruptcyDeclaration <- resellers!!0 `submit` create Proposal with proposer = bankruptReseller; receiver = newReseller; proposal = bankruptcyAgreement
+  bankruptcyDeclaration <- resellers!!0 `submit` create Proposal2 with proposer = bankruptReseller; receiver = newReseller; proposal = bankruptcyAgreement
 
   -- NewReseller agrees to take over
-  bankruptcyAgreement <- newReseller `submit` exercise bankruptcyDeclaration Accept
+  bankruptcyAgreement <- newReseller `submit` exercise bankruptcyDeclaration Accept2
 
   -- For the demo...
   -- Transfer a single volume license

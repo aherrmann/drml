@@ -18,7 +18,10 @@ function Purchases({ history }) {
       templateId: { moduleName: "Book", entityName: "BookPurchase" },
       contractId: c.contractId,
       choice: "AcceptPurchase",
-      argument: {},
+      argument: {
+        duration: { microseconds: 2000000 },
+        expired: false
+      },
       meta: { ledgerEffectiveTime: 0 }
     };
     await sendCommand(ledgerDispatch, user.token, "exercise", command, () => {}, () => {});

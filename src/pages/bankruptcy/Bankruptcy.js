@@ -5,7 +5,7 @@ import { useLedgerState, getContracts, sendCommand, fetchContracts, useLedgerDis
 import Contracts from "../../components/Contracts/Contracts";
 import { useUserState } from "../../context/UserContext";
 
-function Proposals({ history }) {
+function Bankruptcy({ history }) {
 
   const user = useUserState();
   const ledger = useLedgerState();
@@ -21,7 +21,7 @@ function Proposals({ history }) {
     const command = {
       templateId: { moduleName: "Bankruptcy", entityName: "BankruptcyDeclaration" },
       contractId: bankruptcyDeclaration.contractId,
-      choice: "Accept",
+      choice: "Accept2",
       argument: {},
       meta: { ledgerEffectiveTime: 0 }
     };
@@ -56,23 +56,23 @@ function Proposals({ history }) {
   if (isReseller) {
     const reseller = getContract(ledger, "Book", "Reseller");
     const isOwnDeclared = bankruptcyDeclaration && bankruptcyDeclaration.argument.proposer === reseller.argument.reseller;
-    const isOwn = bankruptcy && bankruptcy.argument.reseller === reseller.argument.reseller;
+    const isOwn = bankruptcy && bankruptcy.argument.bankruptReseller === reseller.argument.reseller;
     return (
       <>
-        { isOwnDeclared
-          ? <PageTitle title="Bankruptcy Declared" />
-          : (isOwn ? <PageTitle title="Bankruptcy Accepted" /> : <PageTitle title="Bankruptcy takeover proposed" button="Accept Bankruptcy" onButtonClick={acceptBankruptcy} />) }
+        { bankruptcyDeclaration
+          ? (bankruptcyDeclaration.argument.proposer === reseller.argument.reseller ? <PageTitle title="Bankruptcy Declared" /> : <PageTitle title="Takeover Proposed" button="Accept Bankruptcy" onButtonClick={acceptBankruptcy} />)
+          : (bankruptcy.argument.bankruptReseller === reseller.argument.reseller ? <PageTitle title="Bankruptcy Accepted" /> : <PageTitle title="Takeover Accepted" />) }
       </>
     );
   } else if (isPublisher) {
-    const volumeLicenses = getContracts(ledger, "Book", "BookVolumeLicense");
+    const volumeLicenses = getContracts(ledger, "Book", "BookVolumeLicense").filter(bvl => bvl.argument.reseller === bankruptcy.argument.bankruptReseller);
     return (
       <>
         <PageTitle title="Bankruptcy" />
         <Contracts
           contracts={volumeLicenses}
           columns={[
-            [ "Publisher", "argument.publisher" ],
+            [ "Reseller", "argument.reseller" ],
             [ "ISBN", "argument.book.isbn"],
             [ "Volume", "argument.volume" ]
           ]}
@@ -81,7 +81,7 @@ function Proposals({ history }) {
       </>
     );
   } else if (isConsumer) {
-    const licenses = getContracts(ledger, "Book", "BookLicense");
+    const licenses = getContracts(ledger, "Book", "BookLicense").filter(bl => bl.argument.reseller === bankruptcy.argument.bankruptReseller);
     return (
       <>
         <PageTitle title="Bankruptcy" />
@@ -100,4 +100,4 @@ function Proposals({ history }) {
   }
 }
 
-export default withRouter(Proposals);
+export default withRouter(Bankruptcy);
