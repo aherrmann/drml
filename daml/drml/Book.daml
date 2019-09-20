@@ -383,6 +383,15 @@ setup = scenario do
   blId11 <- submit (resellers!!1) do exercise bvlId11 CreateLicense with reader = consumers!!1
   blId12 <- submit (resellers!!1) do exercise bvlId12 CreateLicense with reader = consumers!!2
 
+  -- Fallback - ready reading permission of fifth book
+  do
+    let reseller = resellers!!0
+    let consumer = consumers!!0
+    (resellerId, _) <- reseller `submit` fetchByKey @Reseller reseller
+    (consumerId, _) <- consumer `submit` fetchByKey @Consumer consumer
+    (_, listing) <- consumer `submit` fetchByKey @BookListing reseller
+    reseller `submit` exercise blId4 GrantReadingPermission with duration = seconds 10; expired = True
+
   pure (parties, books)
 
 inDemoPurchaseBook iou10 reseller consumer duration expired = scenario
